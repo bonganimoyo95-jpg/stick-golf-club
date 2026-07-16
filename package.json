@@ -1,0 +1,10 @@
+{
+  "name": "sites-worker-esm-starter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "export:github": "node scripts/export-github-pages.mjs",
+    "validate": "node scripts/validate-artifact.mjs"
+  }
+}
