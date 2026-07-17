@@ -2,12 +2,13 @@
 window.FNF_NEWSLETTER_CONFIG = {
   endpoint: "https://stick-golf-club.bonganimoyo95.workers.dev",
   formSelectors: [
-    "#newsletter-form",
-    "[data-newsletter-form]",
-    'form[action^="mailto:"]'
-  ],
+  "#signup",
+  "#newsletter-form",
+  "[data-newsletter-form]",
+  'form[action^="mailto:"]'
+],
   emailSelector: 'input[type="email"]',
-  firstNameSelector: 'input[name="firstName"], input[name="first_name"]',
+  firstNameSelector: "#name",
   submitButtonSelector: 'button[type="submit"], input[type="submit"]',
   statusSelector: "#newsletter-status",
   loadingMessage: "Adding you to the list...",
