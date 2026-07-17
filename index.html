@@ -275,5 +275,7 @@ document.querySelector('#next').onclick=()=>{if(g.hole===2)newRound();else{g.hol
 const panel=document.querySelector('#gamePanel');document.querySelector('#mobilePlay').onclick=()=>{panel.classList.add('open');setTimeout(()=>c.focus(),150)};document.querySelector('#closeGame').onclick=()=>panel.classList.remove('open');
 document.querySelector('#signup').onsubmit=e=>{e.preventDefault();let n=document.querySelector('#name').value.trim(),m=document.querySelector('#email').value.trim();document.querySelector('#status').textContent='OPENING YOUR EMAIL APP…';location.href='mailto:hello@stickgolf.club?subject=Join%20the%20STICK%20list&body=Name%3A%20'+encodeURIComponent(n)+'%0AEmail%3A%20'+encodeURIComponent(m)};
 </script>
+<script src="./frontend/newsletter-config.js" defer></script>
+<script src="./frontend/newsletter-bridge.js" defer></script>
 </body>
 </html>
