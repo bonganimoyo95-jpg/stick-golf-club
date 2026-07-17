@@ -8,9 +8,9 @@ window.FNF_NEWSLETTER_CONFIG = {
   'form[action^="mailto:"]'
 ],
   emailSelector: 'input[type="email"]',
-  firstNameSelector: "#name",
+  firstNameSelector: 'input[name="first name"]',
   submitButtonSelector: 'button[type="submit"], input[type="submit"]',
-  statusSelector: "#newsletter-status",
+  statusSelector: "#status",
   loadingMessage: "Adding you to the list...",
   successMessage: "Check your inbox to confirm your subscription.",
   errorMessage: "Something went wrong. Please try again."
