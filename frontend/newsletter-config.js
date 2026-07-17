@@ -12,6 +12,6 @@ window.FNF_NEWSLETTER_CONFIG = {
   submitButtonSelector: 'button[type="submit"], input[type="submit"]',
   statusSelector: "#status",
   loadingMessage: "Adding you to the list...",
-  successMessage: "Check your inbox to confirm your subscription.",
+  successMessage: "You're in.",
   errorMessage: "Something went wrong. Please try again."
 };
