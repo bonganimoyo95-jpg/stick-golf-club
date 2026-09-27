@@ -72,6 +72,11 @@ export default function Home() {
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const firstNameRef = useRef<HTMLInputElement>(null);
+  const signupStartedAt = useRef(0);
+
+useEffect(() => {
+  signupStartedAt.current = Date.now();
+}, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -117,7 +122,7 @@ export default function Home() {
     setJoinMessage("ADDING YOU TO THE LIST…");
 
     try {
-      const response = await fetch("/api/subscribe", {
+      const response = await fetch("https://stick-golf-club.bonganimoyo95.workers.dev", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -125,7 +130,7 @@ export default function Home() {
           email: String(formData.get("email") || "").trim(),
           company: String(formData.get("company") || ""),
           pageUrl: window.location.href,
-          startedAt: Date.now(),
+          startedAt: signupStartedAt.current,
         }),
       });
       const data = await response.json().catch(() => ({}));
