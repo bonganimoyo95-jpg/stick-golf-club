@@ -7,7 +7,9 @@ import PocketGolfEmbed from "./pocket-golf-embed";
 type RoomState = "home" | "next" | "archive" | "sounds" | "play";
 type JoinState = "idle" | "loading" | "success" | "error";
 
-const mainPlaylistLink = "https://open.spotify.com/playlist/5ZalrXpKoz5JQbXrON6lff?si=8eb2a83380a249f7";
+const mainPlaylistLink = "https://open.spotify.com/playlist/3444vekU37Ct11BEwRVFUE?si=b1b5c74c3ea24311";
+const mainPlaylistEmbed = "https://open.spotify.com/embed/playlist/3444vekU37Ct11BEwRVFUE?utm_source=generator&si=b1b5c74c3ea24311";
+const nextEventLink = "https://luma.com/tyngzys7";
 
 const archiveCards = [
   { src: "/assets/archive/01-check-in.webp", rotate: "-1.5deg", label: "CHECK-IN", alt: "A guest smiling as she checks in at the event entrance." },
@@ -58,6 +60,7 @@ function RoomPortal({
         <span className="object-surface" aria-hidden="true" />
         <span className="object-glow" aria-hidden="true" />
         <PortalOutline points={points} />
+        {kind === "next" && <span className="chalkboard-teaser" aria-hidden="true"><small>STICK PRESENTS</small><strong>FAIRWAYS<br />&amp; FRIENDS</strong><b>VOL. 02</b><em>NOV 19 · 8–11 PM</em></span>}
         {play && <span className="simulator-play" aria-hidden="true"><i /></span>}
       </button>
       <span className="object-label" id={descriptionId}><b>{title}</b><small>{description}</small></span>
@@ -70,6 +73,8 @@ export default function Home() {
   const [joinState, setJoinState] = useState<JoinState>("idle");
   const [joinMessage, setJoinMessage] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
+  const [eventInviteOpen, setEventInviteOpen] = useState(false);
+  const inviteCloseRef = useRef<HTMLButtonElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const firstNameRef = useRef<HTMLInputElement>(null);
   const signupStartedAt = useRef(0);
@@ -85,15 +90,37 @@ useEffect(() => {
       const viewport = viewportRef.current;
       if (viewport && window.innerWidth < 760) viewport.scrollLeft = viewport.scrollWidth * 0.055;
     }, 40);
-    return () => window.clearTimeout(timer);
+    const inviteTimer = window.setTimeout(() => {
+      if (!window.location.hash) setEventInviteOpen(true);
+    }, 650);
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(inviteTimer);
+    };
   }, []);
 
   useEffect(() => {
+    if (!eventInviteOpen) return;
+    const timer = window.setTimeout(() => inviteCloseRef.current?.focus(), 0);
+    return () => window.clearTimeout(timer);
+  }, [eventInviteOpen]);
+
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (eventInviteOpen && event.key === "Tab") {
+        const focusable = Array.from(document.querySelectorAll<HTMLElement>(".event-invite-card button:not([disabled]), .event-invite-card a[href]"));
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (first && last && event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (first && last && !event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        return;
+      }
       if (selectedPhoto !== null) {
         if (event.key === "Escape") setSelectedPhoto(null);
         if (event.key === "ArrowLeft") setSelectedPhoto((selectedPhoto - 1 + archiveCards.length) % archiveCards.length);
         if (event.key === "ArrowRight") setSelectedPhoto((selectedPhoto + 1) % archiveCards.length);
+      } else if (event.key === "Escape" && eventInviteOpen) {
+        setEventInviteOpen(false);
       } else if (event.key === "Escape") {
         setRoomState("home");
         window.history.replaceState(null, "", window.location.pathname);
@@ -101,7 +128,7 @@ useEffect(() => {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [selectedPhoto]);
+  }, [selectedPhoto, eventInviteOpen]);
 
   function setState(next: RoomState) {
     setSelectedPhoto(null);
@@ -154,15 +181,15 @@ useEffect(() => {
     <main className={`clubhouse-app state-${roomState}`}>
       <h1 className="sr-only">STICK — Welcome to the new clubhouse</h1>
 
-      <div className="room-viewport" ref={viewportRef} aria-hidden={roomState !== "home"}>
+      <div className="room-viewport" ref={viewportRef} aria-hidden={roomState !== "home" || eventInviteOpen}>
         <div className="room-stage">
           <div className="room-canvas">
             <div className="room-vignette" /><div className="ambient-light light-one" /><div className="ambient-light light-two" />
             <div className="room-atmosphere" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
             <div className="architectural-welcome" aria-hidden="true">WELCOME TO THE NEW CLUBHOUSE</div>
-            <RoomPortal kind="next" points="0,9 88,0 100,88 14,100" title="NEXT ROUND" description="Fairways & Friends Vol. 2" onOpen={() => setState("next")} />
-            <RoomPortal kind="archive" points="92.4,0 100,0 100,98.9 97.6,100 91.8,99.7 84.1,97.2 47.6,97.2 47.1,88.8 31.2,88 28.2,86.3 7.6,86.3 5.9,82.1 5.9,28.6 3.5,27.5 .6,21.8 2.4,16.2 1.2,10.9" title="THE ARCHIVE" description="Fairways & Friends Vol. 1" onOpen={() => setState("archive")} />
-            <RoomPortal kind="sounds" points="60.2,.9 79.2,.9 88.6,6.1 86.9,48.2 98.3,54.4 100,89.5 93.2,90.4 89.8,95.6 74.2,95.6 69.1,92.1 59.3,92.1 55.5,100 48.7,98.2 48.3,89.5 38.6,89.5 33.1,92.1 24.2,87.7 16.1,81.6 6.8,78.1 .4,65.8 .4,41.2 24.6,33.3 35.2,30.7 44.9,31.6 50.4,36.8 58.9,36.8" title="CLUBHOUSE SOUNDS" description="One evolving STICK mix" onOpen={() => setState("sounds")} />
+            <RoomPortal kind="next" points="0,9 88,0 100,88 14,100" title="NEXT ROUND" description="Fairways & Friends Vol. 02 · November 19" onOpen={() => setState("next")} />
+            <RoomPortal kind="archive" points="92.4,0 100,0 100,98.9 97.6,100 91.8,99.7 84.1,97.2 47.6,97.2 47.1,88.8 31.2,88 28.2,86.3 7.6,86.3 5.9,82.1 5.9,28.6 3.5,27.5 .6,21.8 2.4,16.2 1.2,10.9" title="THE ARCHIVE" description="Fairways & Friends Vol. 01" onOpen={() => setState("archive")} />
+            <RoomPortal kind="sounds" points="60.2,.9 79.2,.9 88.6,6.1 86.9,48.2 98.3,54.4 100,89.5 93.2,90.4 89.8,95.6 74.2,95.6 69.1,92.1 59.3,92.1 55.5,100 48.7,98.2 48.3,89.5 38.6,89.5 33.1,92.1 24.2,87.7 16.1,81.6 6.8,78.1 .4,65.8 .4,41.2 24.6,33.3 35.2,30.7 44.9,31.6 50.4,36.8 58.9,36.8" title="CLUBHOUSE SOUNDS" description="Fairways & Friends playlist" onOpen={() => setState("sounds")} />
             <RoomPortal kind="play" points="1,1 100,0 99,99 0,100" title="PLAY POCKET GOLF" description="Hole 13 · Azalea Bend" onOpen={() => setState("play")} play />
             <span className="simulator-depth-mask" aria-hidden="true" />
           </div>
@@ -171,7 +198,7 @@ useEffect(() => {
 
       <p className="mobile-look-hint">SWIPE TO LOOK AROUND <span>↔</span></p>
 
-      <aside className={`signup-dock ${joinState === "success" ? "is-joined" : ""}`} aria-label="Join the STICK clubhouse">
+      <aside className={`signup-dock ${joinState === "success" ? "is-joined" : ""}`} aria-label="Join the STICK clubhouse" aria-hidden={eventInviteOpen}>
         {joinState !== "success" ? <form onSubmit={submitJoin} aria-busy={joinState === "loading"}>
           <label><span className="sr-only">First name</span><input ref={firstNameRef} name="firstName" autoComplete="given-name" required placeholder="FIRST NAME" /></label>
           <label><span className="sr-only">Email address</span><input name="email" type="email" autoComplete="email" required placeholder="EMAIL ADDRESS" /></label>
@@ -185,13 +212,13 @@ useEffect(() => {
         <div className="experience-scrim" onClick={closeRoom} />
 
         {roomState === "next" && <section className="experience-panel event-panel" role="dialog" aria-modal="true" aria-labelledby="event-title">
-          <CloseButton onClick={closeRoom} /><div className="chalk-rule" /><p className="panel-kicker">THE NEXT ROUND</p><h2 id="event-title">FAIRWAYS<br />&amp; FRIENDS</h2><div className="event-volume">VOL. 2</div>
-          <div className="event-meta"><span>NOVEMBER 2026</span><span>DATE TO BE ANNOUNCED</span></div><p className="event-copy">Good swings. Good vibes. Good people. The next gathering is taking shape.</p>
-          <button className="text-link light-link" onClick={focusSignup}>BE FIRST TO KNOW <span>→</span></button><small className="editable-note">LIVE WEBSITE COPY — EASY TO UPDATE WHEN THE DATE IS SET</small>
+          <CloseButton onClick={closeRoom} /><div className="chalk-rule" /><p className="panel-kicker">THE NEXT ROUND · VANCOUVER</p><h2 id="event-title">FAIRWAYS<br />&amp; FRIENDS</h2><div className="event-volume">VOL. 02</div>
+          <div className="event-meta"><span>THURSDAY · NOVEMBER 19, 2026</span><span>8:00–11:00 PM</span><span>HIDEOUT GOLF · VANCOUVER</span><span>$30 PER PLAYER</span></div><p className="event-copy">A night of golf, music and good company at Hideout Golf. Come through for the next Fairways &amp; Friends.</p>
+          <a className="event-reserve-button" href={nextEventLink} target="_blank" rel="noreferrer">RESERVE YOUR SPOT <span>↗</span></a><small className="editable-note">EVENT DETAILS AND TICKETS VIA LUMA</small>
         </section>}
 
         {roomState === "archive" && <section className="experience-panel archive-panel" role="dialog" aria-modal="true" aria-labelledby="archive-title">
-          <CloseButton onClick={closeRoom} /><div className="archive-header"><div><p className="panel-kicker">THE ARCHIVE / ROLL 001</p><h2 id="archive-title">FAIRWAYS &amp; FRIENDS<br />VOL. 1</h2></div><p>Sixteen frames from the first round.<br />Open one, then move through the story.</p></div>
+          <CloseButton onClick={closeRoom} /><div className="archive-header"><div><p className="panel-kicker">THE ARCHIVE / ROLL 001</p><h2 id="archive-title">FAIRWAYS &amp; FRIENDS<br />VOL. 01</h2></div><p>Sixteen frames from the first round.<br />Open one, then move through the story.</p></div>
           <div className="photo-contact-sheet">{archiveCards.map((card, index) => <button className="archive-photo" key={card.src} style={{ "--rotate": card.rotate } as CSSProperties} onClick={() => setSelectedPhoto(index)} aria-label={`Open photo ${index + 1}: ${card.label}`}><span className="photo-image"><Image src={card.src} alt={card.alt} fill sizes="(max-width: 760px) 44vw, 22vw" unoptimized /></span><small>{String(index + 1).padStart(2, "0")} / {card.label}</small></button>)}</div>
           <a className="archive-external" href="https://stickgolfclub.pixieset.com/fairwaysandfriendsvol01/" target="_blank" rel="noreferrer">VIEW ALL 121 PHOTOS <span>↗</span></a>
           {selectedPhoto !== null && <div className="archive-lightbox" role="dialog" aria-modal="true" aria-label={`${archiveCards[selectedPhoto].label}, photo ${selectedPhoto + 1} of ${archiveCards.length}`} onClick={() => setSelectedPhoto(null)}>
@@ -206,13 +233,31 @@ useEffect(() => {
         </section>}
 
         {roomState === "sounds" && <section className="experience-panel sounds-panel" role="dialog" aria-modal="true" aria-labelledby="sounds-title">
-          <CloseButton onClick={closeRoom} /><div className="sounds-copy"><p className="panel-kicker">NOW SPINNING</p><h2 id="sounds-title">SOUNDS FROM<br />THE CLUBHOUSE</h2><p>One evolving mix for the drive over, the first tee and everything after the round.</p><div className="now-playing"><i /><span>STICK RADIO / SIDE A</span><b>33⅓</b></div></div>
+          <CloseButton onClick={closeRoom} /><div className="sounds-copy"><p className="panel-kicker">THE LISTENING ROOM</p><h2 id="sounds-title">FAIRWAYS<br />&amp; FRIENDS</h2><p>The clubhouse soundtrack for the drive over, the first tee and everything after the round.</p><div className="now-playing"><i /><span>NOW SPINNING / SIDE A</span><b>33⅓</b></div></div>
           <div className="turntable" aria-hidden="true"><div className="record"><Image src="/assets/stick-s.png" alt="" width={373} height={319} unoptimized /></div><div className="tonearm"><i /></div></div>
-          <div className="playlist-crate single-playlist"><a href={mainPlaylistLink} target="_blank" rel="noreferrer"><span>THE CLUBHOUSE MIX</span><b>01</b><small>OPEN IN SPOTIFY ↗</small></a></div>
+          <div className="playlist-player"><div className="playlist-player-heading"><svg className="headphone-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 17v-2a11 11 0 0 1 22 0v2" /><rect x="3.5" y="16" width="5.5" height="10" rx="2.5" /><rect x="23" y="16" width="5.5" height="10" rx="2.5" /><path d="M26 25c0 3-2.6 5-6 5h-3" /></svg><div><small>NOW PLAYING</small><strong>FAIRWAYS &amp; FRIENDS</strong></div></div><div className="spotify-embed-shell"><iframe data-testid="embed-iframe" style={{ borderRadius: "12px" }} src={mainPlaylistEmbed} width="100%" height="352" frameBorder="0" allowFullScreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Fairways &amp; Friends playlist on Spotify" /></div><a className="spotify-open-link" href={mainPlaylistLink} target="_blank" rel="noreferrer">OPEN IN SPOTIFY <span>↗</span></a></div>
         </section>}
 
         {roomState === "play" && <PocketGolfEmbed onExit={closeRoom} />}
 
+      </div>}
+
+      {eventInviteOpen && roomState === "home" && <div className="event-invite-layer">
+        <div className="event-invite-scrim" aria-hidden="true" onClick={() => setEventInviteOpen(false)} />
+        <svg className="event-invite-arrow" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <defs><marker id="invite-arrowhead" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto" viewBox="0 0 5 5"><path d="M0 0 L5 2.5 L0 5 Z" /></marker></defs>
+          <path className="desktop-invite-arrow" d="M 34 61 C 27 66, 20 72, 13 79" markerEnd="url(#invite-arrowhead)" />
+          <path className="mobile-invite-arrow" d="M 19 66 C 15 71, 12 76, 10 81" markerEnd="url(#invite-arrowhead)" />
+        </svg>
+        <section className="event-invite-card" role="dialog" aria-modal="true" aria-labelledby="invite-title">
+          <button ref={inviteCloseRef} className="event-invite-close" onClick={() => setEventInviteOpen(false)} aria-label="Close event announcement">×</button>
+          <p className="panel-kicker">THE NEXT STICK GATHERING</p>
+          <h2 id="invite-title">FAIRWAYS<br />&amp; FRIENDS</h2>
+          <span className="invite-volume">VOL. 02</span>
+          <div className="invite-event-details"><b>THURSDAY, NOVEMBER 19, 2026</b><span>8–11 PM · HIDEOUT GOLF</span><span>VANCOUVER · $30</span></div>
+          <a className="invite-reserve-link" href={nextEventLink} target="_blank" rel="noreferrer" onClick={() => setEventInviteOpen(false)}>RESERVE YOUR SPOT <span>↗</span></a>
+          <p className="invite-note">Event details are also on the chalkboard.</p>
+        </section>
       </div>}
     </main>
   );
