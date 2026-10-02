@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { type CSSProperties, type FormEvent, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type FormEvent, type RefObject, useEffect, useRef, useState } from "react";
 import PocketGolfEmbed from "./pocket-golf-embed";
 
 type RoomState = "home" | "next" | "archive" | "sounds" | "play";
@@ -29,8 +29,8 @@ const archiveCards = [
   { src: "/assets/archive/16-one-more.webp", rotate: "1deg", label: "ONE MORE", alt: "A guest raising both arms in celebration beside the simulator." },
 ];
 
-function CloseButton({ onClick }: { onClick: () => void }) {
-  return <button className="close-button" onClick={onClick} aria-label="Return to the clubhouse"><span aria-hidden="true">×</span><small>BACK TO ROOM</small></button>;
+function CloseButton({ onClick, buttonRef }: { onClick: () => void; buttonRef?: RefObject<HTMLButtonElement | null> }) {
+  return <button ref={buttonRef} className="close-button" onClick={onClick} aria-label="Return to the clubhouse"><span aria-hidden="true">×</span><small>BACK TO ROOM</small></button>;
 }
 
 function PortalOutline({ points }: { points: string }) {
@@ -45,7 +45,7 @@ function RoomPortal({
   onOpen,
   play = false,
 }: {
-  kind: "next" | "archive" | "sounds" | "play";
+  kind: "archive" | "sounds" | "play";
   points: string;
   title: string;
   description: string;
@@ -59,7 +59,38 @@ function RoomPortal({
         <span className="object-surface" aria-hidden="true" />
         <span className="object-glow" aria-hidden="true" />
         <PortalOutline points={points} />
-        {kind === "next" && <span className="chalkboard-teaser" aria-hidden="true">
+        {play && <span className="simulator-play" aria-hidden="true"><i /></span>}
+      </button>
+      <span className="object-label" id={descriptionId}><b>{title}</b><small>{description}</small></span>
+    </div>
+  );
+}
+
+function EventChalkboard({
+  isOpen,
+  onOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+}) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const wasOpenRef = useRef(false);
+  useEffect(() => {
+    if (isOpen) closeRef.current?.focus();
+    else if (wasOpenRef.current) triggerRef.current?.focus();
+    wasOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  return (
+    <div className={"room-portal portal-next chalkboard-object" + (isOpen ? " is-open" : "")}>
+      {!isOpen ? <button ref={triggerRef} className="portal-hit chalkboard-hit" onClick={onOpen} aria-label="Open the next Fairways & Friends event details" aria-describedby="portal-next-description">
+        <span className="object-surface" aria-hidden="true" />
+        <span className="object-glow" aria-hidden="true" />
+        <PortalOutline points="0,9 88,0 100,88 14,100" />
+        <span className="chalkboard-teaser" aria-hidden="true">
           <small>UP NEXT</small>
           <strong>FAIRWAYS<br />&amp; FRIENDS</strong>
           <b>VOL. 02</b>
@@ -67,10 +98,33 @@ function RoomPortal({
           <em>NOV 19 · 8–11 PM</em>
           <em>HIDEOUT GOLF · $30</em>
           <label>TAP FOR DETAILS</label>
-        </span>}
-        {play && <span className="simulator-play" aria-hidden="true"><i /></span>}
-      </button>
-      <span className="object-label" id={descriptionId}><b>{title}</b><small>{description}</small></span>
+        </span>
+      </button> : <section className="event-board-face" role="dialog" aria-modal="true" aria-labelledby="event-title">
+        <div className="event-board-slate">
+          <CloseButton onClick={onClose} buttonRef={closeRef} />
+          <p className="event-board-kicker">THE NEXT ROUND · VANCOUVER</p>
+          <h2 id="event-title">FAIRWAYS<br />&amp; FRIENDS</h2>
+          <div className="event-volume">VOL. 02</div>
+          <div className="event-board-rule" />
+          <div className="event-board-details">
+            <strong>THURSDAY, NOVEMBER 19, 2026</strong>
+            <span>8:00–11:00 PM</span>
+            <span>HIDEOUT GOLF · VANCOUVER</span>
+          </div>
+          <div className="event-board-art" aria-hidden="true">
+            <svg viewBox="0 0 180 82" fill="none">
+              <path d="M5 67c20-18 35-21 55-11 11-18 25-19 42-8 12-22 29-25 54-6 10-3 17-1 22 3" />
+              <path d="M15 71h151M80 65V26m0 0 22 9-22 8" />
+              <path d="M20 68 28 49l9 19m5 0 10-26 11 26m51 0 9-19 8 19" />
+              <circle cx="145" cy="24" r="15" />
+            </svg>
+            <span className="event-price"><small>ENTRY</small><b>$30</b></span>
+          </div>
+          <a className="event-reserve-button" href={nextEventLink} target="_blank" rel="noreferrer">RESERVE YOUR SPOT <span>↗</span></a>
+          <small className="event-board-footnote">TICKETS &amp; FULL DETAILS ON LUMA</small>
+        </div>
+      </section>}
+      {!isOpen && <span className="object-label" id="portal-next-description"><b>NEXT ROUND</b><small>Fairways &amp; Friends Vol. 02 · November 19</small></span>}
     </div>
   );
 }
@@ -183,24 +237,26 @@ useEffect(() => {
     <main className={`clubhouse-app state-${roomState}`}>
       <h1 className="sr-only">STICK — Welcome to the new clubhouse</h1>
 
-      <div className="room-viewport" ref={viewportRef} aria-hidden={roomState !== "home" || eventInviteOpen}>
+      <div className="room-viewport" ref={viewportRef} aria-hidden={(roomState !== "home" && roomState !== "next") || eventInviteOpen}>
         <div className="room-stage">
           <div className="room-canvas">
-            <div className="room-vignette" /><div className="ambient-light light-one" /><div className="ambient-light light-two" />
-            <div className="room-atmosphere" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
-            <div className="architectural-welcome" aria-hidden="true">WELCOME TO THE NEW CLUBHOUSE</div>
-            <RoomPortal kind="next" points="0,9 88,0 100,88 14,100" title="NEXT ROUND" description="Fairways & Friends Vol. 02 · November 19" onOpen={() => setState("next")} />
-            <RoomPortal kind="archive" points="92.4,0 100,0 100,98.9 97.6,100 91.8,99.7 84.1,97.2 47.6,97.2 47.1,88.8 31.2,88 28.2,86.3 7.6,86.3 5.9,82.1 5.9,28.6 3.5,27.5 .6,21.8 2.4,16.2 1.2,10.9" title="THE ARCHIVE" description="Fairways & Friends Vol. 01" onOpen={() => setState("archive")} />
-            <RoomPortal kind="sounds" points="60.2,.9 79.2,.9 88.6,6.1 86.9,48.2 98.3,54.4 100,89.5 93.2,90.4 89.8,95.6 74.2,95.6 69.1,92.1 59.3,92.1 55.5,100 48.7,98.2 48.3,89.5 38.6,89.5 33.1,92.1 24.2,87.7 16.1,81.6 6.8,78.1 .4,65.8 .4,41.2 24.6,33.3 35.2,30.7 44.9,31.6 50.4,36.8 58.9,36.8" title="CLUBHOUSE SOUNDS" description="Fairways & Friends playlist" onOpen={() => setState("sounds")} />
-            <RoomPortal kind="play" points="1,1 100,0 99,99 0,100" title="PLAY POCKET GOLF" description="Hole 13 · Azalea Bend" onOpen={() => setState("play")} play />
-            <span className="simulator-depth-mask" aria-hidden="true" />
+            <div className="room-scene-layer" aria-hidden={roomState === "next"} inert={roomState === "next"}>
+              <div className="room-vignette" /><div className="ambient-light light-one" /><div className="ambient-light light-two" />
+              <div className="room-atmosphere" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
+              <div className="architectural-welcome" aria-hidden="true">WELCOME TO THE NEW CLUBHOUSE</div>
+              <RoomPortal kind="archive" points="92.4,0 100,0 100,98.9 97.6,100 91.8,99.7 84.1,97.2 47.6,97.2 47.1,88.8 31.2,88 28.2,86.3 7.6,86.3 5.9,82.1 5.9,28.6 3.5,27.5 .6,21.8 2.4,16.2 1.2,10.9" title="THE ARCHIVE" description="Fairways & Friends Vol. 01" onOpen={() => setState("archive")} />
+              <RoomPortal kind="sounds" points="60.2,.9 79.2,.9 88.6,6.1 86.9,48.2 98.3,54.4 100,89.5 93.2,90.4 89.8,95.6 74.2,95.6 69.1,92.1 59.3,92.1 55.5,100 48.7,98.2 48.3,89.5 38.6,89.5 33.1,92.1 24.2,87.7 16.1,81.6 6.8,78.1 .4,65.8 .4,41.2 24.6,33.3 35.2,30.7 44.9,31.6 50.4,36.8 58.9,36.8" title="CLUBHOUSE SOUNDS" description="Fairways & Friends playlist" onOpen={() => setState("sounds")} />
+              <RoomPortal kind="play" points="1,1 100,0 99,99 0,100" title="PLAY POCKET GOLF" description="Hole 13 · Azalea Bend" onOpen={() => setState("play")} play />
+              <span className="simulator-depth-mask" aria-hidden="true" />
+            </div>
+            <EventChalkboard isOpen={roomState === "next"} onOpen={() => setState("next")} onClose={closeRoom} />
           </div>
         </div>
       </div>
 
       <p className="mobile-look-hint">SWIPE TO LOOK AROUND <span>↔</span></p>
 
-      <aside className={`signup-dock ${joinState === "success" ? "is-joined" : ""}`} aria-label="Join the STICK clubhouse" aria-hidden={eventInviteOpen}>
+      <aside className={`signup-dock ${joinState === "success" ? "is-joined" : ""}`} aria-label="Join the STICK clubhouse" aria-hidden={eventInviteOpen || roomState === "next"}>
         {joinState !== "success" ? <form onSubmit={submitJoin} aria-busy={joinState === "loading"}>
           <label><span className="sr-only">First name</span><input ref={firstNameRef} name="firstName" autoComplete="given-name" required placeholder="FIRST NAME" /></label>
           <label><span className="sr-only">Email address</span><input name="email" type="email" autoComplete="email" required placeholder="EMAIL ADDRESS" /></label>
@@ -210,34 +266,8 @@ useEffect(() => {
         </form> : <div className="signup-confirmation" role="status"><strong>{joinMessage || "YOU’RE ON THE LIST."}</strong><button onClick={() => { setJoinState("idle"); setJoinMessage(""); }}>ADD ANOTHER</button></div>}
       </aside>
 
-      {roomState !== "home" && <div className="experience-layer" role="presentation">
+      {roomState !== "home" && roomState !== "next" && <div className="experience-layer" role="presentation">
         <div className="experience-scrim" onClick={closeRoom} />
-
-        {roomState === "next" && <section className="experience-panel event-panel" role="dialog" aria-modal="true" aria-labelledby="event-title">
-          <div className="event-board-face">
-            <CloseButton onClick={closeRoom} />
-            <p className="event-board-kicker">THE NEXT ROUND · VANCOUVER</p>
-            <h2 id="event-title">FAIRWAYS<br />&amp; FRIENDS</h2>
-            <div className="event-volume">VOL. 02</div>
-            <div className="event-board-rule" />
-            <div className="event-board-details">
-              <strong>THURSDAY, NOVEMBER 19, 2026</strong>
-              <span>8:00–11:00 PM</span>
-              <span>HIDEOUT GOLF · VANCOUVER</span>
-            </div>
-            <div className="event-board-art" aria-hidden="true">
-              <svg viewBox="0 0 180 82" fill="none">
-                <path d="M5 67c20-18 35-21 55-11 11-18 25-19 42-8 12-22 29-25 54-6 10-3 17-1 22 3" />
-                <path d="M15 71h151M80 65V26m0 0 22 9-22 8" />
-                <path d="M20 68 28 49l9 19m5 0 10-26 11 26m51 0 9-19 8 19" />
-                <circle cx="145" cy="24" r="15" />
-              </svg>
-              <span className="event-price"><small>ENTRY</small><b>$30</b></span>
-            </div>
-            <a className="event-reserve-button" href={nextEventLink} target="_blank" rel="noreferrer">RESERVE YOUR SPOT <span>↗</span></a>
-            <small className="event-board-footnote">TICKETS &amp; FULL DETAILS ON LUMA</small>
-          </div>
-        </section>}
 
         {roomState === "archive" && <section className="experience-panel archive-panel" role="dialog" aria-modal="true" aria-labelledby="archive-title">
           <CloseButton onClick={closeRoom} /><div className="archive-header"><div><p className="panel-kicker">THE ARCHIVE / ROLL 001</p><h2 id="archive-title">FAIRWAYS &amp; FRIENDS<br />VOL. 01</h2></div><p>Sixteen frames from the first round.<br />Open one, then move through the story.</p></div>
@@ -255,16 +285,13 @@ useEffect(() => {
         </section>}
 
         {roomState === "sounds" && <section className="experience-panel sounds-panel listening-room-panel" role="dialog" aria-modal="true" aria-labelledby="sounds-title">
-          <div className="listening-room-image" aria-hidden="true" />
+          <h2 id="sounds-title" className="sr-only">Clubhouse Sounds: Fairways &amp; Friends</h2>
           <CloseButton onClick={closeRoom} />
-          <div className="listening-screen">
-            <div className="playlist-player-heading">
-              <svg className="headphone-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 17v-2a11 11 0 0 1 22 0v2" /><rect x="3.5" y="16" width="5.5" height="10" rx="2.5" /><rect x="23" y="16" width="5.5" height="10" rx="2.5" /><path d="M26 25c0 3-2.6 5-6 5h-3" /></svg>
-              <div><small>CLUBHOUSE SOUNDS</small><strong id="sounds-title">FAIRWAYS &amp; FRIENDS</strong></div>
+          <div className="listening-room-image">
+            <div className="listening-screen">
+              <iframe data-testid="embed-iframe" src={mainPlaylistEmbed} width="100%" height="100%" frameBorder="0" allowFullScreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Fairways &amp; Friends playlist on Spotify" />
             </div>
-            <div className="spotify-embed-shell"><iframe data-testid="embed-iframe" src={mainPlaylistEmbed} width="100%" height="352" frameBorder="0" allowFullScreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Fairways &amp; Friends playlist on Spotify" /></div>
           </div>
-          <span className="listening-room-caption">SIDE A · THE CLUBHOUSE MIX</span>
         </section>}
 
         {roomState === "play" && <PocketGolfEmbed onExit={closeRoom} />}
