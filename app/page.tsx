@@ -7,7 +7,6 @@ import PocketGolfEmbed from "./pocket-golf-embed";
 type RoomState = "home" | "next" | "archive" | "sounds" | "play";
 type JoinState = "idle" | "loading" | "success" | "error";
 
-const mainPlaylistLink = "https://open.spotify.com/playlist/3444vekU37Ct11BEwRVFUE?si=b1b5c74c3ea24311";
 const mainPlaylistEmbed = "https://open.spotify.com/embed/playlist/3444vekU37Ct11BEwRVFUE?utm_source=generator&si=b1b5c74c3ea24311";
 const nextEventLink = "https://luma.com/tyngzys7";
 
@@ -60,7 +59,15 @@ function RoomPortal({
         <span className="object-surface" aria-hidden="true" />
         <span className="object-glow" aria-hidden="true" />
         <PortalOutline points={points} />
-        {kind === "next" && <span className="chalkboard-teaser" aria-hidden="true"><small>STICK PRESENTS</small><strong>FAIRWAYS<br />&amp; FRIENDS</strong><b>VOL. 02</b><em>NOV 19 · 8–11 PM</em></span>}
+        {kind === "next" && <span className="chalkboard-teaser" aria-hidden="true">
+          <small>UP NEXT</small>
+          <strong>FAIRWAYS<br />&amp; FRIENDS</strong>
+          <b>VOL. 02</b>
+          <i />
+          <em>NOV 19 · 8–11 PM</em>
+          <em>HIDEOUT GOLF · $30</em>
+          <label>TAP FOR DETAILS</label>
+        </span>}
         {play && <span className="simulator-play" aria-hidden="true"><i /></span>}
       </button>
       <span className="object-label" id={descriptionId}><b>{title}</b><small>{description}</small></span>
@@ -172,11 +179,6 @@ useEffect(() => {
     }
   }
 
-  function focusSignup() {
-    closeRoom();
-    window.setTimeout(() => firstNameRef.current?.focus(), 280);
-  }
-
   return (
     <main className={`clubhouse-app state-${roomState}`}>
       <h1 className="sr-only">STICK — Welcome to the new clubhouse</h1>
@@ -212,9 +214,29 @@ useEffect(() => {
         <div className="experience-scrim" onClick={closeRoom} />
 
         {roomState === "next" && <section className="experience-panel event-panel" role="dialog" aria-modal="true" aria-labelledby="event-title">
-          <CloseButton onClick={closeRoom} /><div className="chalk-rule" /><p className="panel-kicker">THE NEXT ROUND · VANCOUVER</p><h2 id="event-title">FAIRWAYS<br />&amp; FRIENDS</h2><div className="event-volume">VOL. 02</div>
-          <div className="event-meta"><span>THURSDAY · NOVEMBER 19, 2026</span><span>8:00–11:00 PM</span><span>HIDEOUT GOLF · VANCOUVER</span><span>$30 PER PLAYER</span></div><p className="event-copy">A night of golf, music and good company at Hideout Golf. Come through for the next Fairways &amp; Friends.</p>
-          <a className="event-reserve-button" href={nextEventLink} target="_blank" rel="noreferrer">RESERVE YOUR SPOT <span>↗</span></a><small className="editable-note">EVENT DETAILS AND TICKETS VIA LUMA</small>
+          <div className="event-board-face">
+            <CloseButton onClick={closeRoom} />
+            <p className="event-board-kicker">THE NEXT ROUND · VANCOUVER</p>
+            <h2 id="event-title">FAIRWAYS<br />&amp; FRIENDS</h2>
+            <div className="event-volume">VOL. 02</div>
+            <div className="event-board-rule" />
+            <div className="event-board-details">
+              <strong>THURSDAY, NOVEMBER 19, 2026</strong>
+              <span>8:00–11:00 PM</span>
+              <span>HIDEOUT GOLF · VANCOUVER</span>
+            </div>
+            <div className="event-board-art" aria-hidden="true">
+              <svg viewBox="0 0 180 82" fill="none">
+                <path d="M5 67c20-18 35-21 55-11 11-18 25-19 42-8 12-22 29-25 54-6 10-3 17-1 22 3" />
+                <path d="M15 71h151M80 65V26m0 0 22 9-22 8" />
+                <path d="M20 68 28 49l9 19m5 0 10-26 11 26m51 0 9-19 8 19" />
+                <circle cx="145" cy="24" r="15" />
+              </svg>
+              <span className="event-price"><small>ENTRY</small><b>$30</b></span>
+            </div>
+            <a className="event-reserve-button" href={nextEventLink} target="_blank" rel="noreferrer">RESERVE YOUR SPOT <span>↗</span></a>
+            <small className="event-board-footnote">TICKETS &amp; FULL DETAILS ON LUMA</small>
+          </div>
         </section>}
 
         {roomState === "archive" && <section className="experience-panel archive-panel" role="dialog" aria-modal="true" aria-labelledby="archive-title">
@@ -232,10 +254,17 @@ useEffect(() => {
           </div>}
         </section>}
 
-        {roomState === "sounds" && <section className="experience-panel sounds-panel" role="dialog" aria-modal="true" aria-labelledby="sounds-title">
-          <CloseButton onClick={closeRoom} /><div className="sounds-copy"><p className="panel-kicker">THE LISTENING ROOM</p><h2 id="sounds-title">FAIRWAYS<br />&amp; FRIENDS</h2><p>The clubhouse soundtrack for the drive over, the first tee and everything after the round.</p><div className="now-playing"><i /><span>NOW SPINNING / SIDE A</span><b>33⅓</b></div></div>
-          <div className="turntable" aria-hidden="true"><div className="record"><Image src="/assets/stick-s.png" alt="" width={373} height={319} unoptimized /></div><div className="tonearm"><i /></div></div>
-          <div className="playlist-player"><div className="playlist-player-heading"><svg className="headphone-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 17v-2a11 11 0 0 1 22 0v2" /><rect x="3.5" y="16" width="5.5" height="10" rx="2.5" /><rect x="23" y="16" width="5.5" height="10" rx="2.5" /><path d="M26 25c0 3-2.6 5-6 5h-3" /></svg><div><small>NOW PLAYING</small><strong>FAIRWAYS &amp; FRIENDS</strong></div></div><div className="spotify-embed-shell"><iframe data-testid="embed-iframe" style={{ borderRadius: "12px" }} src={mainPlaylistEmbed} width="100%" height="352" frameBorder="0" allowFullScreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Fairways &amp; Friends playlist on Spotify" /></div><a className="spotify-open-link" href={mainPlaylistLink} target="_blank" rel="noreferrer">OPEN IN SPOTIFY <span>↗</span></a></div>
+        {roomState === "sounds" && <section className="experience-panel sounds-panel listening-room-panel" role="dialog" aria-modal="true" aria-labelledby="sounds-title">
+          <div className="listening-room-image" aria-hidden="true" />
+          <CloseButton onClick={closeRoom} />
+          <div className="listening-screen">
+            <div className="playlist-player-heading">
+              <svg className="headphone-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 17v-2a11 11 0 0 1 22 0v2" /><rect x="3.5" y="16" width="5.5" height="10" rx="2.5" /><rect x="23" y="16" width="5.5" height="10" rx="2.5" /><path d="M26 25c0 3-2.6 5-6 5h-3" /></svg>
+              <div><small>CLUBHOUSE SOUNDS</small><strong id="sounds-title">FAIRWAYS &amp; FRIENDS</strong></div>
+            </div>
+            <div className="spotify-embed-shell"><iframe data-testid="embed-iframe" src={mainPlaylistEmbed} width="100%" height="352" frameBorder="0" allowFullScreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Fairways &amp; Friends playlist on Spotify" /></div>
+          </div>
+          <span className="listening-room-caption">SIDE A · THE CLUBHOUSE MIX</span>
         </section>}
 
         {roomState === "play" && <PocketGolfEmbed onExit={closeRoom} />}
@@ -246,18 +275,18 @@ useEffect(() => {
         <div className="event-invite-scrim" aria-hidden="true" onClick={() => setEventInviteOpen(false)} />
         <svg className="event-invite-arrow" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <defs><marker id="invite-arrowhead" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto" viewBox="0 0 5 5"><path d="M0 0 L5 2.5 L0 5 Z" /></marker></defs>
-          <path className="desktop-invite-arrow" d="M 34 61 C 27 66, 20 72, 13 79" markerEnd="url(#invite-arrowhead)" />
-          <path className="mobile-invite-arrow" d="M 19 66 C 15 71, 12 76, 10 81" markerEnd="url(#invite-arrowhead)" />
+          <path className="desktop-invite-arrow" d="M 37 49 C 31 55, 25 62, 18 72" markerEnd="url(#invite-arrowhead)" />
+          <path className="mobile-invite-arrow" d="M 7 65 C 9 71, 12 76, 15 82" markerEnd="url(#invite-arrowhead)" />
         </svg>
         <section className="event-invite-card" role="dialog" aria-modal="true" aria-labelledby="invite-title">
           <button ref={inviteCloseRef} className="event-invite-close" onClick={() => setEventInviteOpen(false)} aria-label="Close event announcement">×</button>
-          <p className="panel-kicker">THE NEXT STICK GATHERING</p>
-          <h2 id="invite-title">FAIRWAYS<br />&amp; FRIENDS</h2>
-          <span className="invite-volume">VOL. 02</span>
-          <div className="invite-event-details"><b>THURSDAY, NOVEMBER 19, 2026</b><span>8–11 PM · HIDEOUT GOLF</span><span>VANCOUVER · $30</span></div>
+          <p className="invite-kicker">UP NEXT AT STICK</p>
+          <h2 id="invite-title">Fairways &amp; Friends <span>Vol. 02</span></h2>
+          <div className="invite-rule" />
+          <div className="invite-event-details"><strong>Thursday, November 19</strong><span>8–11 PM · Hideout Golf · Vancouver</span><b>$30</b></div>
           <a className="invite-reserve-link" href={nextEventLink} target="_blank" rel="noreferrer" onClick={() => setEventInviteOpen(false)}>RESERVE YOUR SPOT <span>↗</span></a>
-          <p className="invite-note">Event details are also on the chalkboard.</p>
         </section>
+        <p className="invite-board-note">You can also open event details on the chalkboard.</p>
       </div>}
     </main>
   );
