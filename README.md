@@ -13,6 +13,7 @@ This is the complete landing-page source for the STICK digital clubhouse. The ro
 
 ## Files to edit
 
+- `app/site-content.ts` holds everything that changes between events: the next event's details and Luma link, the About STICK copy, and the analytics token.
 - `app/page.tsx` contains the landing page, room interactions and live content.
 - `app/globals.css` contains the room layout, responsive behavior and visual treatments.
 - `public/assets/` contains the room artwork, listening-room artwork, archive photos and brand assets.

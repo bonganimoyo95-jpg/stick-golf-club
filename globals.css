@@ -1289,3 +1289,111 @@ body.pocket-golf-open {
   .sounds-panel.listening-room-panel .close-button { top: 12px; left: 12px; }
   .listening-screen { left: 33.5%; top: 9.5%; width: 36%; height: 46.5%; }
 }
+
+/* ==========================================================================
+   Pre-event pass: brand logos, readable type, signup promise, About STICK.
+   ========================================================================== */
+
+/* The Fairways & Friends logo, tinted with the current text colour. */
+.series-logo-mask {
+  display: block;
+  aspect-ratio: 1965 / 616;
+  background: currentColor;
+  -webkit-mask: url("/assets/brand/fairways-and-friends.svg") center / contain no-repeat;
+  mask: url("/assets/brand/fairways-and-friends.svg") center / contain no-repeat;
+}
+
+/* Chalkboard in the room: fewer lines, sized from the board itself so it stays legible on phones. */
+.portal-next .chalkboard-teaser { container-type: inline-size; gap: 5%; }
+.chalkboard-teaser .chalkboard-logo { width: 96%; flex: 0 0 auto; }
+.chalkboard-teaser small { font-size: 8.5cqw; }
+.chalkboard-teaser b { font-size: 10cqw; }
+.chalkboard-teaser em { font-size: 8.6cqw; letter-spacing: 0; }
+.chalkboard-teaser label { margin-top: 0; font-size: 8.5cqw; }
+
+/* Open chalkboard. */
+.event-board-slate h2 { transform: rotate(-1.1deg); text-shadow: none; }
+.event-board-logo { width: min(86%, 430px); color: #f0e8d8; }
+
+/* Room labels. */
+.object-label b { font-size: 11px; }
+.object-label small { font-size: 10px; letter-spacing: .02em; }
+.close-button small { font-size: 10px; }
+
+/* The STICK sign is the way into the story. */
+.portal-about { --reveal-delay: .5s; --surface-size: 1515.15% 476.19%; --surface-position: 4.71% 34.18%; left: 4.4%; top: 27%; width: 6.6%; height: 21%; }
+.portal-about .object-glow { background: rgba(241,223,192,.014); }
+.portal-about .object-label { left: 62%; top: 66%; }
+
+/* Persistent brand mark: always-visible answer to "what is this?". */
+.brand-mark { position: fixed; z-index: 45; top: 18px; left: 18px; display: grid; gap: 7px; justify-items: start; padding: 11px 13px 10px; border: 0; border-left: 3px solid var(--marigold); color: var(--cream); background: rgba(21,18,14,.78); backdrop-filter: blur(8px); cursor: pointer; text-align: left; transition: background 160ms ease; }
+.brand-mark:hover { background: rgba(21,18,14,.95); }
+.brand-mark-logo { display: block; width: 92px; aspect-ratio: 1502 / 294; background: currentColor; -webkit-mask: url("/assets/brand/stick-wordmark.svg") center / contain no-repeat; mask: url("/assets/brand/stick-wordmark.svg") center / contain no-repeat; }
+.brand-mark small { font-family: var(--font-geist-mono), monospace; font-size: 10px; font-weight: 700; letter-spacing: .1em; }
+.brand-mark small span { color: var(--marigold); }
+.clubhouse-app:not(.state-home) .brand-mark { display: none; }
+
+/* Signup dock: say what people get, and make it comfortable to type in. */
+.signup-dock input { font-size: 14px; letter-spacing: .02em; }
+.signup-dock input:focus-visible { outline: 0; border-bottom: 2px solid var(--marigold); padding-bottom: 6px; }
+.signup-dock form > button { font-size: 12px; }
+.signup-promise { grid-column: 1 / -1; order: -1; margin: 0; padding: 7px 15px 6px; border-bottom: 1px solid rgba(241,223,192,.22); color: rgba(241,223,192,.86); font-family: var(--font-geist-mono), monospace; font-size: 10px; font-weight: 700; letter-spacing: .1em; }
+.signup-status { font-size: 11px; }
+.signup-confirmation button { font-size: 10px; }
+
+/* First-visit invitation. */
+.event-invite-card h2 { flex-direction: column; align-items: center; gap: 12px; }
+.invite-logo { width: min(340px, 84%); height: auto; }
+.event-invite-card h2 span { color: #615747; font-family: var(--font-geist-mono), monospace; font-size: 13px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; }
+.invite-reserve-link { font-size: 12px; }
+
+/* About STICK. */
+.about-panel { inset: 6vh max(4vw, calc(50vw - 390px)); padding: clamp(30px,4.4vw,60px); overflow: auto; color: var(--espresso); background: #f2eadb; box-shadow: 8px 10px 0 rgba(198,90,34,.88), 0 24px 80px rgba(0,0,0,.58); }
+.about-panel .close-button { color: var(--black); }
+.about-inner { max-width: 640px; }
+.about-wordmark { display: block; width: 132px; aspect-ratio: 1502 / 294; margin-bottom: 34px; background: var(--espresso); -webkit-mask: url("/assets/brand/stick-wordmark.svg") center / contain no-repeat; mask: url("/assets/brand/stick-wordmark.svg") center / contain no-repeat; }
+.about-panel .panel-kicker { color: #795638; font-size: 11px; }
+.about-panel h2 { margin: 0 0 24px; font-size: clamp(38px,5.2vw,64px); font-weight: 650; line-height: .98; letter-spacing: -.045em; }
+.about-copy { max-width: 56ch; margin: 0 0 14px; font-size: 17px; line-height: 1.55; }
+.about-programs { margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(58,36,24,.3); }
+.about-series { display: flex; align-items: center; gap: 24px; margin: 4px 0 22px; }
+.about-series img { flex: 0 0 auto; width: 220px; height: auto; }
+.about-series p { margin: 0 0 9px; font-size: 15px; line-height: 1.45; }
+.about-link { padding: 0 0 3px; border: 0; border-bottom: 1px solid currentColor; color: inherit; background: none; cursor: pointer; font-family: var(--font-geist-mono), monospace; font-size: 12px; font-weight: 700; letter-spacing: .06em; }
+.about-link:hover { color: var(--orange); }
+.about-coming { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-family: var(--font-geist-mono), monospace; font-size: 11px; letter-spacing: .04em; }
+.about-coming b { margin-right: 6px; letter-spacing: .14em; }
+.about-coming span { padding: 5px 9px; border: 1px dashed rgba(58,36,24,.55); }
+.about-join { min-height: 52px; margin-top: 30px; padding: 0 24px; border: 0; color: var(--black); background: var(--marigold); box-shadow: 4px 4px 0 var(--orange); cursor: pointer; font-family: var(--font-geist-mono), monospace; font-size: 12px; font-weight: 900; letter-spacing: .1em; }
+.about-join:hover { color: var(--cream); background: var(--orange); box-shadow: 4px 4px 0 var(--espresso); }
+.about-join span { margin-left: 10px; }
+
+@media (max-width: 760px) {
+  .object-label b { font-size: 11px; }
+  .object-label small { font-size: 10px; }
+  .brand-mark { top: 12px; left: 12px; padding: 9px 11px 8px; }
+  .brand-mark-logo { width: 76px; }
+  .mobile-look-hint { top: 14px; left: auto; right: 12px; font-size: 10px; letter-spacing: .06em; }
+  /* 16px inputs stop iOS Safari zooming the page on focus. */
+  .signup-dock form { grid-template-columns: 1fr 1.2fr auto; }
+  .signup-dock input { font-size: 16px; letter-spacing: 0; }
+  .signup-dock form > button { min-width: 0; padding: 0 12px; font-size: 12px; letter-spacing: .04em; }
+  .signup-dock form > button span { display: none; }
+  .signup-promise { padding: 6px 9px 5px; font-size: 9px; letter-spacing: .07em; }
+  .event-invite-arrow, .invite-board-note { display: none; }
+  .event-invite-card h2 { font-size: inherit; }
+  .about-panel { inset: 0; padding: 64px 22px 40px; box-shadow: none; }
+  .about-copy { font-size: 16px; }
+  .about-series { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .about-series img { width: 200px; }
+}
+
+/* Small-screen and overlay tidy-ups. */
+.portal-about .object-label { width: max-content; }
+.event-invite-arrow { display: none; }
+.clubhouse-app:not(.state-home) .mobile-look-hint { display: none; }
+@media (max-width: 760px) {
+  .signup-dock form { grid-template-columns: 1.15fr 1fr auto; }
+  /* The brand mark in the corner already says this on phones. */
+  .portal-about .object-label { display: none; }
+}

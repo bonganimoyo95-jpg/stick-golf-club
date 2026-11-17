@@ -3,12 +3,14 @@
 import Image from "next/image";
 import { type CSSProperties, type FormEvent, type RefObject, useEffect, useRef, useState } from "react";
 import PocketGolfEmbed from "./pocket-golf-embed";
+import { nextEvent, vision } from "./site-content";
 
-type RoomState = "home" | "next" | "archive" | "sounds" | "play";
+type RoomState = "home" | "next" | "archive" | "sounds" | "play" | "about";
 type JoinState = "idle" | "loading" | "success" | "error";
 
 const mainPlaylistEmbed = "https://open.spotify.com/embed/playlist/3444vekU37Ct11BEwRVFUE?utm_source=generator&si=b1b5c74c3ea24311";
-const nextEventLink = "https://luma.com/tyngzys7";
+const inviteSeenKey = `stick-invite-seen:${nextEvent.id}`;
+const seriesLogo = "/assets/brand/fairways-and-friends.svg";
 
 const archiveCards = [
   { src: "/assets/archive/01-check-in.webp", rotate: "-1.5deg", label: "CHECK-IN", alt: "A guest smiling as she checks in at the event entrance." },
@@ -45,7 +47,7 @@ function RoomPortal({
   onOpen,
   play = false,
 }: {
-  kind: "archive" | "sounds" | "play";
+  kind: "archive" | "sounds" | "play" | "about";
   points: string;
   title: string;
   description: string;
@@ -86,30 +88,28 @@ function EventChalkboard({
 
   return (
     <div className={"room-portal portal-next chalkboard-object" + (isOpen ? " is-open" : "")}>
-      {!isOpen ? <button ref={triggerRef} className="portal-hit chalkboard-hit" onClick={onOpen} aria-label="Open the next Fairways & Friends event details" aria-describedby="portal-next-description">
+      {!isOpen ? <button ref={triggerRef} className="portal-hit chalkboard-hit" onClick={onOpen} aria-label={`Open the next ${nextEvent.series} event details`} aria-describedby="portal-next-description">
         <span className="object-surface" aria-hidden="true" />
         <span className="object-glow" aria-hidden="true" />
         <PortalOutline points="0,9 88,0 100,88 14,100" />
         <span className="chalkboard-teaser" aria-hidden="true">
           <small>UP NEXT</small>
-          <strong>FAIRWAYS<br />&amp; FRIENDS</strong>
-          <b>VOL. 02</b>
-          <i />
-          <em>NOV 19 · 8–11 PM</em>
-          <em>HIDEOUT GOLF · $30</em>
-          <label>TAP FOR DETAILS</label>
+          <span className="series-logo-mask chalkboard-logo" />
+          <b>{nextEvent.volume.toUpperCase()}</b>
+          <em>{nextEvent.dateShort} · {nextEvent.timeShort}</em>
+          <label>DETAILS →</label>
         </span>
       </button> : <section className="event-board-face" role="dialog" aria-modal="true" aria-labelledby="event-title">
         <div className="event-board-slate">
           <CloseButton onClick={onClose} buttonRef={closeRef} />
-          <p className="event-board-kicker">THE NEXT ROUND · VANCOUVER</p>
-          <h2 id="event-title">FAIRWAYS<br />&amp; FRIENDS</h2>
-          <div className="event-volume">VOL. 02</div>
+          <p className="event-board-kicker">THE NEXT ROUND · {nextEvent.city.toUpperCase()}</p>
+          <h2 id="event-title"><span className="sr-only">{nextEvent.series}</span><span className="series-logo-mask event-board-logo" aria-hidden="true" /></h2>
+          <div className="event-volume">{nextEvent.volume.toUpperCase()}</div>
           <div className="event-board-rule" />
           <div className="event-board-details">
-            <strong>THURSDAY, NOVEMBER 19, 2026</strong>
-            <span>8:00–11:00 PM</span>
-            <span>HIDEOUT GOLF · VANCOUVER</span>
+            <strong>{nextEvent.dateFull}</strong>
+            <span>{nextEvent.timeLong}</span>
+            <span>{nextEvent.venue.toUpperCase()} · {nextEvent.city.toUpperCase()}</span>
           </div>
           <div className="event-board-art" aria-hidden="true">
             <svg viewBox="0 0 180 82" fill="none">
@@ -118,13 +118,13 @@ function EventChalkboard({
               <path d="M20 68 28 49l9 19m5 0 10-26 11 26m51 0 9-19 8 19" />
               <circle cx="145" cy="24" r="15" />
             </svg>
-            <span className="event-price"><small>ENTRY</small><b>$30</b></span>
+            <span className="event-price"><small>ENTRY</small><b>{nextEvent.price}</b></span>
           </div>
-          <a className="event-reserve-button" href={nextEventLink} target="_blank" rel="noreferrer">RESERVE YOUR SPOT <span>↗</span></a>
+          <a className="event-reserve-button" href={nextEvent.link("chalkboard")} target="_blank" rel="noreferrer">RESERVE YOUR SPOT <span>↗</span></a>
           <small className="event-board-footnote">TICKETS &amp; FULL DETAILS ON LUMA</small>
         </div>
       </section>}
-      {!isOpen && <span className="object-label" id="portal-next-description"><b>NEXT ROUND</b><small>Fairways &amp; Friends Vol. 02 · November 19</small></span>}
+      {!isOpen && <span className="object-label" id="portal-next-description"><b>NEXT ROUND</b><small>{nextEvent.series} {nextEvent.volume} · {nextEvent.dateShort}</small></span>}
     </div>
   );
 }
@@ -147,13 +147,19 @@ useEffect(() => {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const hash = window.location.hash.replace("#", "") as RoomState;
-      if (["next", "archive", "sounds"].includes(hash)) setRoomState(hash);
+      if (["next", "archive", "sounds", "about"].includes(hash)) setRoomState(hash);
       const viewport = viewportRef.current;
       if (viewport && window.innerWidth < 760) viewport.scrollLeft = viewport.scrollWidth * 0.055;
     }, 40);
+    // The invitation greets a visitor once per event, after they have had a moment to see the room.
     const inviteTimer = window.setTimeout(() => {
-      if (!window.location.hash) setEventInviteOpen(true);
-    }, 650);
+      if (!nextEvent.live || window.location.hash) return;
+      let seen = false;
+      try { seen = window.localStorage.getItem(inviteSeenKey) === "1"; } catch { /* storage unavailable: show it */ }
+      if (seen) return;
+      setEventInviteOpen(true);
+      try { window.localStorage.setItem(inviteSeenKey, "1"); } catch { /* ignore */ }
+    }, 1800);
     return () => {
       window.clearTimeout(timer);
       window.clearTimeout(inviteTimer);
@@ -200,6 +206,11 @@ useEffect(() => {
 
   function closeRoom() { setState("home"); }
 
+  function goToSignup() {
+    setState("home");
+    window.setTimeout(() => firstNameRef.current?.focus(), 80);
+  }
+
   async function submitJoin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (joinState === "loading") return;
@@ -216,7 +227,8 @@ useEffect(() => {
         body: JSON.stringify({
           firstName: String(formData.get("firstName") || "").trim(),
           email: String(formData.get("email") || "").trim(),
-          company: String(formData.get("company") || ""),
+          // The bridge still receives this as `company`; the input itself has a name autofill tools ignore.
+          company: String(formData.get("hp_trap_x7") || ""),
           pageUrl: window.location.href,
           startedAt: signupStartedAt.current,
         }),
@@ -244,6 +256,7 @@ useEffect(() => {
               <div className="room-vignette" /><div className="ambient-light light-one" /><div className="ambient-light light-two" />
               <div className="room-atmosphere" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
               <div className="architectural-welcome" aria-hidden="true">WELCOME TO THE NEW CLUBHOUSE</div>
+              <RoomPortal kind="about" points="0,0 100,0 100,100 0,100" title="WHAT IS STICK?" description="Our story and what's next" onOpen={() => setState("about")} />
               <RoomPortal kind="archive" points="92.4,0 100,0 100,98.9 97.6,100 91.8,99.7 84.1,97.2 47.6,97.2 47.1,88.8 31.2,88 28.2,86.3 7.6,86.3 5.9,82.1 5.9,28.6 3.5,27.5 .6,21.8 2.4,16.2 1.2,10.9" title="THE ARCHIVE" description="Fairways & Friends Vol. 01" onOpen={() => setState("archive")} />
               <RoomPortal kind="sounds" points="60.2,.9 79.2,.9 88.6,6.1 86.9,48.2 98.3,54.4 100,89.5 93.2,90.4 89.8,95.6 74.2,95.6 69.1,92.1 59.3,92.1 55.5,100 48.7,98.2 48.3,89.5 38.6,89.5 33.1,92.1 24.2,87.7 16.1,81.6 6.8,78.1 .4,65.8 .4,41.2 24.6,33.3 35.2,30.7 44.9,31.6 50.4,36.8 58.9,36.8" title="CLUBHOUSE SOUNDS" description="Fairways & Friends playlist" onOpen={() => setState("sounds")} />
               <RoomPortal kind="play" points="1,1 100,0 99,99 0,100" title="PLAY POCKET GOLF" description="Hole 13 · Azalea Bend" onOpen={() => setState("play")} play />
@@ -254,14 +267,20 @@ useEffect(() => {
         </div>
       </div>
 
+      <button className="brand-mark" onClick={() => setState("about")} aria-label="What is STICK? Read our story" aria-hidden={eventInviteOpen || roomState !== "home"} tabIndex={eventInviteOpen || roomState !== "home" ? -1 : 0}>
+        <span className="brand-mark-logo" aria-hidden="true" />
+        <small>WHAT IS STICK? <span aria-hidden="true">→</span></small>
+      </button>
+
       <p className="mobile-look-hint">SWIPE TO LOOK AROUND <span>↔</span></p>
 
       <aside className={`signup-dock ${joinState === "success" ? "is-joined" : ""}`} aria-label="Join the STICK clubhouse" aria-hidden={eventInviteOpen || roomState === "next"}>
         {joinState !== "success" ? <form onSubmit={submitJoin} aria-busy={joinState === "loading"}>
-          <label><span className="sr-only">First name</span><input ref={firstNameRef} name="firstName" autoComplete="given-name" required placeholder="FIRST NAME" /></label>
-          <label><span className="sr-only">Email address</span><input name="email" type="email" autoComplete="email" required placeholder="EMAIL ADDRESS" /></label>
-          <input className="signup-honeypot" name="company" tabIndex={-1} autoComplete="off" aria-hidden="true" />
-          <button type="submit" disabled={joinState === "loading"}>{joinState === "loading" ? "SIGNING UP…" : "SIGN ME UP"} <span>→</span></button>
+          <label><span className="sr-only">First name</span><input ref={firstNameRef} name="firstName" autoComplete="given-name" required placeholder="FIRST NAME" enterKeyHint="next" /></label>
+          <label><span className="sr-only">Email address</span><input name="email" type="email" autoComplete="email" required placeholder="EMAIL" inputMode="email" enterKeyHint="send" /></label>
+          <input className="signup-honeypot" name="hp_trap_x7" tabIndex={-1} autoComplete="off" aria-hidden="true" data-1p-ignore data-lpignore="true" data-form-type="other" />
+          <button type="submit" disabled={joinState === "loading"}>{joinState === "loading" ? "JOINING…" : "JOIN THE LIST"} <span aria-hidden="true">→</span></button>
+          {!joinMessage && <p className="signup-promise">FIRST WORD ON EVERY STICK EVENT. NO SPAM.</p>}
           {joinMessage && <p className={`signup-status is-${joinState}`} role="status" aria-live="polite">{joinMessage}</p>}
         </form> : <div className="signup-confirmation" role="status"><strong>{joinMessage || "YOU’RE ON THE LIST."}</strong><button onClick={() => { setJoinState("idle"); setJoinMessage(""); }}>ADD ANOTHER</button></div>}
       </aside>
@@ -294,6 +313,28 @@ useEffect(() => {
           </div>
         </section>}
 
+        {roomState === "about" && <section className="experience-panel about-panel" role="dialog" aria-modal="true" aria-labelledby="about-title">
+          <CloseButton onClick={closeRoom} />
+          <div className="about-inner">
+            <span className="about-wordmark" role="img" aria-label="STICK" />
+            <p className="panel-kicker">{vision.kicker}</p>
+            <h2 id="about-title">{vision.headline}</h2>
+            {vision.paragraphs.map((paragraph) => <p className="about-copy" key={paragraph}>{paragraph}</p>)}
+            <div className="about-programs">
+              <p className="panel-kicker">{vision.programsTitle}</p>
+              <div className="about-series">
+                <Image src={seriesLogo} alt={nextEvent.series} width={1965} height={616} unoptimized />
+                <div>
+                  <p>{vision.seriesBlurb}</p>
+                  {nextEvent.live && <button className="about-link" onClick={() => setState("next")}>{nextEvent.volume} · {nextEvent.dateLong} <span aria-hidden="true">→</span></button>}
+                </div>
+              </div>
+              <p className="about-coming"><b>{vision.comingSoonLabel}</b>{vision.comingSoon.map((item) => <span key={item}>{item}</span>)}</p>
+            </div>
+            <button className="about-join" onClick={goToSignup}>JOIN THE LIST <span aria-hidden="true">→</span></button>
+          </div>
+        </section>}
+
         {roomState === "play" && <PocketGolfEmbed onExit={closeRoom} />}
 
       </div>}
@@ -308,10 +349,10 @@ useEffect(() => {
         <section className="event-invite-card" role="dialog" aria-modal="true" aria-labelledby="invite-title">
           <button ref={inviteCloseRef} className="event-invite-close" onClick={() => setEventInviteOpen(false)} aria-label="Close event announcement">×</button>
           <p className="invite-kicker">UP NEXT AT STICK</p>
-          <h2 id="invite-title">Fairways &amp; Friends <span>Vol. 02</span></h2>
+          <h2 id="invite-title"><Image className="invite-logo" src={seriesLogo} alt={nextEvent.series} width={1965} height={616} priority unoptimized /><span>{nextEvent.volume}</span></h2>
           <div className="invite-rule" />
-          <div className="invite-event-details"><strong>Thursday, November 19</strong><span>8–11 PM · Hideout Golf · Vancouver</span><b>$30</b></div>
-          <a className="invite-reserve-link" href={nextEventLink} target="_blank" rel="noreferrer" onClick={() => setEventInviteOpen(false)}>RESERVE YOUR SPOT <span>↗</span></a>
+          <div className="invite-event-details"><strong>{nextEvent.dateLong}</strong><span>{nextEvent.timeShort} · {nextEvent.venue} · {nextEvent.city}</span><b>{nextEvent.price}</b></div>
+          <a className="invite-reserve-link" href={nextEvent.link("invite")} target="_blank" rel="noreferrer" onClick={() => setEventInviteOpen(false)}>RESERVE YOUR SPOT <span>↗</span></a>
         </section>
         <p className="invite-board-note">You can also open event details on the chalkboard.</p>
       </div>}
