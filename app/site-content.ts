@@ -4,6 +4,8 @@
  */
 
 export const siteUrl = "https://stickgolf.club";
+export const instagramUrl = "https://www.instagram.com/stick_golfclub/";
+export const instagramHandle = "@stick_golfclub";
 
 /**
  * Cloudflare Web Analytics token. Leave empty to load no analytics at all.
@@ -46,7 +48,6 @@ export const vision = {
     "The clubhouse is how we think about belonging: a place where you are already a member. This one is online for now. A real one is the goal.",
   ],
   programsTitle: "WHAT'S ON AT THE CLUBHOUSE",
-  seriesBlurb: "Our event series. Golf simulators, music and good people.",
-  comingSoonLabel: "IN THE WORKS",
-  comingSoon: ["After-work nines", "Golf trips", "Merch"],
+  /** Kept broad on purpose: the series is not tied to one kind of venue. */
+  seriesBlurb: "Our event series: golf, music and good people.",
 };

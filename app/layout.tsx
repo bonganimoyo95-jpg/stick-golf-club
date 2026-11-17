@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Barlow_Condensed, Caveat_Brush, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { cloudflareAnalyticsToken, nextEvent, siteUrl } from "./site-content";
+import { cloudflareAnalyticsToken, instagramUrl, nextEvent, siteUrl } from "./site-content";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+// Chalkboard lettering.
+const boardSans = Barlow_Condensed({ variable: "--font-board", subsets: ["latin"], weight: ["600"] });
+const boardHand = Caveat_Brush({ variable: "--font-chalk", subsets: ["latin"], weight: ["400"] });
 
 const title = "STICK — Golf has room for you";
 const description = nextEvent.live
@@ -34,15 +37,15 @@ const eventJsonLd = {
   eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
   location: { "@type": "Place", name: nextEvent.venue, address: { "@type": "PostalAddress", addressLocality: nextEvent.city, addressRegion: "BC", addressCountry: "CA" } },
   image: [`${siteUrl}${nextEvent.shareImage}`],
-  description: "A Fairways & Friends night from STICK: golf simulators, music and good people.",
+  description: "A Fairways & Friends night from STICK: golf, music and good people.",
   offers: { "@type": "Offer", price: nextEvent.priceValue, priceCurrency: nextEvent.currency, url: nextEvent.link("search"), availability: "https://schema.org/InStock" },
-  organizer: { "@type": "Organization", name: "STICK", url: siteUrl },
+  organizer: { "@type": "Organization", name: "STICK", url: siteUrl, sameAs: [instagramUrl] },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${boardSans.variable} ${boardHand.variable}`}>
         {children}
         {nextEvent.live && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }} />}
         {cloudflareAnalyticsToken && <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={JSON.stringify({ token: cloudflareAnalyticsToken })} />}

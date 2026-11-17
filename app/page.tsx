@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { type CSSProperties, type FormEvent, type RefObject, useEffect, useRef, useState } from "react";
 import PocketGolfEmbed from "./pocket-golf-embed";
-import { nextEvent, vision } from "./site-content";
+import { instagramHandle, instagramUrl, nextEvent, vision } from "./site-content";
 
 type RoomState = "home" | "next" | "archive" | "sounds" | "play" | "about";
 type JoinState = "idle" | "loading" | "success" | "error";
@@ -100,28 +100,45 @@ function EventChalkboard({
           <label>DETAILS →</label>
         </span>
       </button> : <section className="event-board-face" role="dialog" aria-modal="true" aria-labelledby="event-title">
+        <svg className="chalk-defs" aria-hidden="true" focusable="false">
+          <filter id="chalk" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3" result="warp" />
+            <feDisplacementMap in="SourceGraphic" in2="warp" scale="2" result="rough" />
+            <feTurbulence type="fractalNoise" baseFrequency="1.15" numOctaves="2" seed="8" result="grain" />
+            <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.7 1.75" result="dust" />
+            <feComposite in="rough" in2="dust" operator="in" />
+          </filter>
+        </svg>
         <div className="event-board-slate">
           <CloseButton onClick={onClose} buttonRef={closeRef} />
-          <p className="event-board-kicker">THE NEXT ROUND · {nextEvent.city.toUpperCase()}</p>
-          <h2 id="event-title"><span className="sr-only">{nextEvent.series}</span><span className="series-logo-mask event-board-logo" aria-hidden="true" /></h2>
-          <div className="event-volume">{nextEvent.volume.toUpperCase()}</div>
-          <div className="event-board-rule" />
-          <div className="event-board-details">
+          <div className="chalk">
+            <h2 id="event-title"><span className="sr-only">{nextEvent.series}</span><span className="series-logo-mask event-board-logo" aria-hidden="true" /></h2>
+            <div className="event-volume"><span>{nextEvent.volume.toUpperCase()}</span>
+              <svg viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path d="M3 8C28 4 58 9 117 4" /></svg>
+            </div>
+            <svg className="event-board-flight" viewBox="0 0 150 80" fill="none" aria-hidden="true">
+              <path className="flight-arc" d="M4 76C30 40 70 22 112 20" />
+              <circle className="flight-ball" cx="130" cy="18" r="13" />
+              <path className="flight-dimples" d="M124 13h.1M130 11h.1M136 14h.1M126 19h.1M132 17h.1M137 20h.1M128 24h.1M134 24h.1" />
+            </svg>
+          </div>
+          <div className="event-board-details chalk">
             <strong>{nextEvent.dateFull}</strong>
             <span>{nextEvent.timeLong}</span>
             <span>{nextEvent.venue.toUpperCase()} · {nextEvent.city.toUpperCase()}</span>
           </div>
-          <div className="event-board-art" aria-hidden="true">
-            <svg viewBox="0 0 180 82" fill="none">
-              <path d="M5 67c20-18 35-21 55-11 11-18 25-19 42-8 12-22 29-25 54-6 10-3 17-1 22 3" />
-              <path d="M15 71h151M80 65V26m0 0 22 9-22 8" />
-              <path d="M20 68 28 49l9 19m5 0 10-26 11 26m51 0 9-19 8 19" />
-              <circle cx="145" cy="24" r="15" />
+          <div className="event-board-art chalk" aria-hidden="true">
+            <svg viewBox="0 0 220 96" fill="none">
+              <path d="M30 40l-6 11h4l-7 11h5l-8 11h24l-8-11h5l-7-11h4zM30 73v7M52 50l-5 9h3l-6 9h4l-6 8h20l-6-8h4l-6-9h3zM52 76v5M70 60l-4 7h3l-5 8h12l-5-8h3zM70 75v4" />
+              <path d="M8 84c30-9 60-12 96-12s70 4 108 12" />
+              <ellipse cx="128" cy="78" rx="62" ry="10" />
+              <path className="art-soft" d="M84 80c20 5 66 6 90 0M70 76c8-3 20-5 30-5M96 86c22 3 52 3 72-1" />
+              <path d="M128 78V34l22 8-22 9" />
+              <path className="art-soft" d="M124 79c2 1 6 1 8 0" />
             </svg>
-            <span className="event-price"><small>ENTRY</small><b>{nextEvent.price}</b></span>
+            <span className="event-price"><b>{nextEvent.price}</b></span>
           </div>
-          <a className="event-reserve-button" href={nextEvent.link("chalkboard")} target="_blank" rel="noreferrer">RESERVE YOUR SPOT <span>↗</span></a>
-          <small className="event-board-footnote">TICKETS &amp; FULL DETAILS ON LUMA</small>
+          <a className="event-reserve-button" href={nextEvent.link("chalkboard")} target="_blank" rel="noreferrer"><span>RESERVE YOUR SPOT</span></a>
         </div>
       </section>}
       {!isOpen && <span className="object-label" id="portal-next-description"><b>NEXT ROUND</b><small>{nextEvent.series} {nextEvent.volume} · {nextEvent.dateShort}</small></span>}
@@ -135,6 +152,8 @@ export default function Home() {
   const [joinMessage, setJoinMessage] = useState("");
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
   const [eventInviteOpen, setEventInviteOpen] = useState(false);
+  // Once opened, the Spotify player stays mounted so music keeps playing while the visitor explores.
+  const [soundsLoaded, setSoundsLoaded] = useState(false);
   const inviteCloseRef = useRef<HTMLButtonElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const firstNameRef = useRef<HTMLInputElement>(null);
@@ -148,6 +167,7 @@ useEffect(() => {
     const timer = window.setTimeout(() => {
       const hash = window.location.hash.replace("#", "") as RoomState;
       if (["next", "archive", "sounds", "about"].includes(hash)) setRoomState(hash);
+      if (hash === "sounds") setSoundsLoaded(true);
       const viewport = viewportRef.current;
       if (viewport && window.innerWidth < 760) viewport.scrollLeft = viewport.scrollWidth * 0.055;
     }, 40);
@@ -199,6 +219,7 @@ useEffect(() => {
 
   function setState(next: RoomState) {
     setSelectedPhoto(null);
+    if (next === "sounds") setSoundsLoaded(true);
     setRoomState(next);
     const hash = next === "home" ? window.location.pathname : `#${next}`;
     window.history.replaceState(null, "", hash);
@@ -258,7 +279,7 @@ useEffect(() => {
               <div className="architectural-welcome" aria-hidden="true">WELCOME TO THE NEW CLUBHOUSE</div>
               <RoomPortal kind="about" points="0,0 100,0 100,100 0,100" title="WHAT IS STICK?" description="Our story and what's next" onOpen={() => setState("about")} />
               <RoomPortal kind="archive" points="92.4,0 100,0 100,98.9 97.6,100 91.8,99.7 84.1,97.2 47.6,97.2 47.1,88.8 31.2,88 28.2,86.3 7.6,86.3 5.9,82.1 5.9,28.6 3.5,27.5 .6,21.8 2.4,16.2 1.2,10.9" title="THE ARCHIVE" description="Fairways & Friends Vol. 01" onOpen={() => setState("archive")} />
-              <RoomPortal kind="sounds" points="60.2,.9 79.2,.9 88.6,6.1 86.9,48.2 98.3,54.4 100,89.5 93.2,90.4 89.8,95.6 74.2,95.6 69.1,92.1 59.3,92.1 55.5,100 48.7,98.2 48.3,89.5 38.6,89.5 33.1,92.1 24.2,87.7 16.1,81.6 6.8,78.1 .4,65.8 .4,41.2 24.6,33.3 35.2,30.7 44.9,31.6 50.4,36.8 58.9,36.8" title="CLUBHOUSE SOUNDS" description="Fairways & Friends playlist" onOpen={() => setState("sounds")} />
+              <RoomPortal kind="sounds" points="1.3,22.1 22.0,13.4 49.6,5.5 85.0,7.7 90.9,2.1 97.2,5.5 98.4,35.2 82.1,39.6 81.1,98.0 61.4,92.7 11.2,70.1 1.7,61.4" title="CLUBHOUSE SOUNDS" description="Fairways & Friends playlist" onOpen={() => setState("sounds")} />
               <RoomPortal kind="play" points="1,1 100,0 99,99 0,100" title="PLAY POCKET GOLF" description="Hole 13 · Azalea Bend" onOpen={() => setState("play")} play />
               <span className="simulator-depth-mask" aria-hidden="true" />
             </div>
@@ -285,7 +306,7 @@ useEffect(() => {
         </form> : <div className="signup-confirmation" role="status"><strong>{joinMessage || "YOU’RE ON THE LIST."}</strong><button onClick={() => { setJoinState("idle"); setJoinMessage(""); }}>ADD ANOTHER</button></div>}
       </aside>
 
-      {roomState !== "home" && roomState !== "next" && <div className="experience-layer" role="presentation">
+      {roomState !== "home" && roomState !== "next" && roomState !== "sounds" && <div className="experience-layer" role="presentation">
         <div className="experience-scrim" onClick={closeRoom} />
 
         {roomState === "archive" && <section className="experience-panel archive-panel" role="dialog" aria-modal="true" aria-labelledby="archive-title">
@@ -301,16 +322,6 @@ useEffect(() => {
             </figure>
             <button className="lightbox-arrow lightbox-next" onClick={(event) => { event.stopPropagation(); setSelectedPhoto((selectedPhoto + 1) % archiveCards.length); }} aria-label="Next photo">→</button>
           </div>}
-        </section>}
-
-        {roomState === "sounds" && <section className="experience-panel sounds-panel listening-room-panel" role="dialog" aria-modal="true" aria-labelledby="sounds-title">
-          <h2 id="sounds-title" className="sr-only">Clubhouse Sounds: Fairways &amp; Friends</h2>
-          <CloseButton onClick={closeRoom} />
-          <div className="listening-room-image">
-            <div className="listening-screen">
-              <iframe data-testid="embed-iframe" src={mainPlaylistEmbed} width="100%" height="100%" frameBorder="0" allowFullScreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Fairways &amp; Friends playlist on Spotify" />
-            </div>
-          </div>
         </section>}
 
         {roomState === "about" && <section className="experience-panel about-panel" role="dialog" aria-modal="true" aria-labelledby="about-title">
@@ -329,14 +340,35 @@ useEffect(() => {
                   {nextEvent.live && <button className="about-link" onClick={() => setState("next")}>{nextEvent.volume} · {nextEvent.dateLong} <span aria-hidden="true">→</span></button>}
                 </div>
               </div>
-              <p className="about-coming"><b>{vision.comingSoonLabel}</b>{vision.comingSoon.map((item) => <span key={item}>{item}</span>)}</p>
             </div>
-            <button className="about-join" onClick={goToSignup}>JOIN THE LIST <span aria-hidden="true">→</span></button>
+            <div className="about-actions">
+              <button className="about-join" onClick={goToSignup}>JOIN THE LIST <span aria-hidden="true">→</span></button>
+              <a className="about-social" href={instagramUrl} target="_blank" rel="noreferrer">INSTAGRAM {instagramHandle} <span aria-hidden="true">↗</span></a>
+            </div>
           </div>
         </section>}
 
         {roomState === "play" && <PocketGolfEmbed onExit={closeRoom} />}
 
+      </div>}
+
+      {soundsLoaded && <div className={"experience-layer sounds-layer" + (roomState === "sounds" ? "" : " is-parked")} role="presentation" aria-hidden={roomState !== "sounds"} inert={roomState !== "sounds"}>
+        <div className="experience-scrim" onClick={closeRoom} />
+        <section className="experience-panel sounds-panel listening-room-panel" role="dialog" aria-modal="true" aria-labelledby="sounds-title">
+          <h2 id="sounds-title" className="sr-only">Clubhouse Sounds: Fairways &amp; Friends</h2>
+          <CloseButton onClick={closeRoom} />
+          <div className="listening-room-image">
+            <div className="listening-screen">
+              <iframe data-testid="embed-iframe" src={mainPlaylistEmbed} width="100%" height="100%" frameBorder="0" allowFullScreen allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" title="Fairways &amp; Friends playlist on Spotify" />
+            </div>
+          </div>
+          <p className="sounds-keep-note">MUSIC KEEPS PLAYING WHEN YOU HEAD BACK TO THE ROOM.</p>
+        </section>
+      </div>}
+
+      {soundsLoaded && roomState === "home" && !eventInviteOpen && <div className="sounds-chip">
+        <button className="sounds-chip-open" onClick={() => setState("sounds")} aria-label="Open the Clubhouse Sounds player"><i aria-hidden="true"><b /><b /><b /></i>CLUBHOUSE SOUNDS</button>
+        <button className="sounds-chip-stop" onClick={() => setSoundsLoaded(false)} aria-label="Stop the music and close the player">×</button>
       </div>}
 
       {eventInviteOpen && roomState === "home" && <div className="event-invite-layer">

@@ -1361,9 +1361,6 @@ body.pocket-golf-open {
 .about-series p { margin: 0 0 9px; font-size: 15px; line-height: 1.45; }
 .about-link { padding: 0 0 3px; border: 0; border-bottom: 1px solid currentColor; color: inherit; background: none; cursor: pointer; font-family: var(--font-geist-mono), monospace; font-size: 12px; font-weight: 700; letter-spacing: .06em; }
 .about-link:hover { color: var(--orange); }
-.about-coming { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-family: var(--font-geist-mono), monospace; font-size: 11px; letter-spacing: .04em; }
-.about-coming b { margin-right: 6px; letter-spacing: .14em; }
-.about-coming span { padding: 5px 9px; border: 1px dashed rgba(58,36,24,.55); }
 .about-join { min-height: 52px; margin-top: 30px; padding: 0 24px; border: 0; color: var(--black); background: var(--marigold); box-shadow: 4px 4px 0 var(--orange); cursor: pointer; font-family: var(--font-geist-mono), monospace; font-size: 12px; font-weight: 900; letter-spacing: .1em; }
 .about-join:hover { color: var(--cream); background: var(--orange); box-shadow: 4px 4px 0 var(--espresso); }
 .about-join span { margin-left: 10px; }
@@ -1396,4 +1393,79 @@ body.pocket-golf-open {
   .signup-dock form { grid-template-columns: 1.15fr 1fr auto; }
   /* The brand mark in the corner already says this on phones. */
   .portal-about .object-label { display: none; }
+}
+
+/* ==========================================================================
+   Round two: turntable outline, chalkboard redesign, music that keeps playing.
+   ========================================================================== */
+
+/* Outline now traces the turntable itself. */
+.portal-sounds { --portal-shape: polygon(1.3% 22.1%,22.0% 13.4%,49.6% 5.5%,85.0% 7.7%,90.9% 2.1%,97.2% 5.5%,98.4% 35.2%,82.1% 39.6%,81.1% 98.0%,61.4% 92.7%,11.2% 70.1%,1.7% 61.4%); --surface-size: 1315.79% 1639.34%; --surface-position: 86.9% 53.57%; left: 80.3%; top: 50.3%; width: 7.6%; height: 6.1%; }
+.portal-sounds .object-label { right: -18%; top: 118%; }
+
+/* Open chalkboard: dark wood frame, dusty slate, chalk lettering. */
+.chalk-defs { position: absolute; width: 0; height: 0; }
+.chalk { filter: url(#chalk); }
+.event-board-face { padding: clamp(8px,.9vw,13px); background: linear-gradient(135deg,#4a3120 0%,#2c1c12 22%,#3f2a1b 55%,#24160e 82%,#4a3222 100%); border: 1px solid rgba(20,12,7,.9); box-shadow: inset 0 0 0 1px rgba(160,118,78,.28), inset 0 0 14px rgba(0,0,0,.6), 0 18px 40px rgba(0,0,0,.55); }
+.event-board-slate { gap: clamp(8px,1vw,14px); padding: clamp(18px,2.2vw,34px) clamp(16px,2vw,30px) clamp(16px,1.8vw,26px); background-color: #1b1d1c; background-image: radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.055),transparent 55%), radial-gradient(ellipse at 75% 80%,rgba(255,255,255,.035),transparent 50%), repeating-linear-gradient(4deg,transparent 0 9px,rgba(255,255,255,.014) 10px,transparent 12px); border: 0; box-shadow: inset 0 0 0 1px rgba(0,0,0,.5), inset 0 0 46px rgba(0,0,0,.55); }
+.event-board-slate > .chalk:first-of-type { position: relative; }
+.event-board-slate h2 { margin: 0 48px 0 0; transform: rotate(-2deg); transform-origin: left center; text-shadow: none; }
+.event-board-logo { width: min(88%, 440px); color: #efe6d2; }
+.event-board-slate .event-volume { display: inline-grid; align-self: flex-start; margin: clamp(8px,1vw,14px) 0 0 2px; padding: 0; color: #e5a51d; background: none; font-family: var(--font-chalk), "Segoe Print", cursive; font-size: clamp(24px,2.5vw,38px); font-weight: 400; letter-spacing: .04em; line-height: 1; transform: rotate(-2deg); }
+.event-volume svg { width: 100%; height: 9px; margin-top: 2px; overflow: visible; }
+.event-volume svg path { fill: none; stroke: #d9661f; stroke-width: 3; stroke-linecap: round; }
+.event-board-flight { position: absolute; right: -2%; bottom: -8%; width: 44%; max-width: 190px; pointer-events: none; }
+.flight-arc { stroke: rgba(239,230,210,.8); stroke-width: 1.6; stroke-dasharray: 5 6; stroke-linecap: round; }
+.flight-ball { fill: rgba(239,230,210,.92); }
+.flight-dimples { stroke: #1b1d1c; stroke-width: 2.2; stroke-linecap: round; }
+.event-board-details { gap: clamp(4px,.5vw,8px); padding: clamp(10px,1.2vw,18px) 10px; color: #efe6d2; border: 12px solid transparent; border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M12 1.5H48A10.500 10.500 0 0 0 58.500 12V48A10.500 10.500 0 0 0 48 58.500H12A10.500 10.500 0 0 0 1.500 48V12A10.500 10.500 0 0 0 12 1.500Z' fill='none' stroke='%23efe6d2' stroke-opacity='.8' stroke-width='1.6'/%3E%3C/svg%3E") 20 / 14px stretch; font-family: var(--font-board), "Arial Narrow", sans-serif; font-size: clamp(13px,1.35vw,21px); font-weight: 600; letter-spacing: .09em; text-shadow: none; }
+.event-board-details strong { font-size: 1em; font-weight: 600; }
+.event-board-art { flex: 1 1 auto; align-items: center; gap: 12px; min-height: 70px; padding: 0 4px; }
+.event-board-art svg { width: min(64%,250px); stroke: rgba(239,230,210,.82); stroke-width: 1.5; }
+.event-board-art .art-soft { stroke: rgba(239,230,210,.4); stroke-width: 1.1; }
+.event-price { width: clamp(64px,6.4vw,92px); border: 2px solid rgba(239,230,210,.85); outline: 1px solid rgba(239,230,210,.4); outline-offset: 3px; color: #efe6d2; transform: rotate(4deg); }
+.event-price b { margin: 0; font-family: var(--font-chalk), "Segoe Print", cursive; font-size: clamp(24px,2.4vw,36px); font-weight: 400; }
+.event-board-slate .event-reserve-button { min-height: clamp(46px,4.4vw,60px); margin-top: 0; padding: 5px; color: #17130d; background: #e8a91d; border: 0; box-shadow: 0 3px 0 rgba(0,0,0,.4); font-family: var(--font-geist-mono), monospace; font-size: clamp(11px,1vw,14px); font-weight: 900; letter-spacing: .14em; }
+.event-board-slate .event-reserve-button span { display: grid; place-items: center; width: 100%; height: 100%; min-height: inherit; margin: -5px 0; font-size: inherit; border: 1.5px dashed rgba(23,19,13,.55); }
+.event-board-slate .close-button { top: 8px; right: 8px; padding: 4px 8px; color: rgba(239,230,210,.8); border-color: rgba(239,230,210,.3); }
+.event-board-slate .close-button small { display: none; }
+
+/* Music keeps playing: the player is parked off-screen instead of being removed. */
+.sounds-layer.is-parked { position: fixed; inset: auto; left: -200vw; top: 0; width: 100vw; height: 100vh; opacity: 0; pointer-events: none; }
+.sounds-keep-note { position: absolute; z-index: 9; left: 50%; bottom: 16px; margin: 0; padding: 6px 10px; color: var(--cream); background: rgba(21,18,14,.82); font-family: var(--font-geist-mono), monospace; font-size: 10px; font-weight: 700; letter-spacing: .1em; white-space: nowrap; transform: translateX(-50%); }
+.sounds-chip { position: fixed; z-index: 45; top: 18px; right: 18px; display: flex; color: var(--cream); background: rgba(21,18,14,.86); border: 1px solid rgba(241,223,192,.5); backdrop-filter: blur(8px); }
+.sounds-chip button { border: 0; color: inherit; background: transparent; cursor: pointer; font-family: var(--font-geist-mono), monospace; }
+.sounds-chip-open { display: flex; align-items: center; gap: 9px; min-height: 40px; padding: 0 12px; font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+.sounds-chip-open:hover, .sounds-chip-stop:hover { color: var(--black); background: var(--marigold); }
+.sounds-chip-stop { width: 40px; border-left: 1px solid rgba(241,223,192,.3) !important; font-size: 20px; line-height: 1; }
+.sounds-chip i { display: flex; align-items: flex-end; gap: 2px; height: 12px; }
+.sounds-chip i b { width: 3px; background: var(--marigold); animation: sounds-bars 900ms ease-in-out infinite alternate; }
+.sounds-chip i b:nth-child(1) { height: 45%; }
+.sounds-chip i b:nth-child(2) { height: 100%; animation-delay: -300ms; }
+.sounds-chip i b:nth-child(3) { height: 65%; animation-delay: -600ms; }
+.sounds-chip-open:hover i b { background: var(--black); }
+@keyframes sounds-bars { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
+.sounds-chip i b { transform-origin: bottom; }
+@media (prefers-reduced-motion: reduce) { .sounds-chip i b { animation: none; } }
+
+/* About: actions row. */
+.about-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; margin-top: 30px; }
+.about-actions .about-join { margin-top: 0; }
+.about-social { padding-bottom: 3px; border-bottom: 1px solid currentColor; color: inherit; font-family: var(--font-geist-mono), monospace; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-decoration: none; }
+.about-social:hover { color: var(--orange); }
+
+@media (max-width: 760px) {
+  .event-board-slate { gap: 14px; padding: 30px 22px 22px; }
+  .event-board-slate .event-volume { font-size: 30px; }
+  .event-board-details { font-size: 17px; }
+  .event-price { width: 78px; }
+  .event-price b { font-size: 30px; }
+  .event-board-slate .event-reserve-button { min-height: 54px; font-size: 12px; }
+  .sounds-chip { top: 46px; right: 12px; }
+  .sounds-keep-note { bottom: 12px; font-size: 9px; letter-spacing: .06em; }
+}
+
+@media (max-width: 760px) {
+  /* Keep the archive label clear of the turntable. */
+  .portal-archive .object-label { bottom: 8%; }
 }
