@@ -1469,3 +1469,19 @@ body.pocket-golf-open {
   /* Keep the archive label clear of the turntable. */
   .portal-archive .object-label { bottom: 8%; }
 }
+
+/* ==========================================================================
+   Room chalkboard: the event is drawn on the board in the artwork, not laid over it.
+   ========================================================================== */
+/* Wipe the board's original lettering, following the slate's own shape. */
+.chalkboard-wipe { position: absolute; inset: 0; pointer-events: none; clip-path: polygon(11.2% 10.6%, 85.2% 7%, 96% 83.6%, 22.6% 93%); background: radial-gradient(ellipse at 38% 30%, rgba(52,54,56,.5), transparent 60%), radial-gradient(ellipse at 70% 72%, rgba(44,46,50,.45), transparent 55%), linear-gradient(160deg, #1c1b1d, #17181c 55%, #141518); filter: blur(.4px); }
+/* Lettering sits in the slate's plane: same lean and slope as the board. */
+.portal-next .chalkboard-teaser { inset: auto; left: 12.5%; top: 12.5%; width: 71%; height: 76%; gap: 3.5%; overflow: visible; padding: 0; color: #e9e3d6; background: none; box-shadow: none; text-shadow: none; transform-origin: 0 0; transform: matrix(1, -.072, .104, 1, 0, 0); filter: url(#chalk-fine); opacity: .93; }
+.chalkboard-teaser small, .chalkboard-teaser b, .chalkboard-teaser em, .chalkboard-teaser label { font-family: var(--font-chalk), "Segoe Print", cursive; font-style: normal; font-weight: 400; letter-spacing: .01em; line-height: 1; text-transform: none; white-space: nowrap; }
+.chalkboard-teaser small { color: #e08a45; font-size: 15cqw; transform: rotate(-3deg); align-self: flex-start; margin-left: 4%; }
+.chalkboard-teaser .chalkboard-logo { width: 100%; }
+.chalkboard-teaser b { color: #e9b53c; font-size: 17cqw; }
+.chalkboard-stroke { width: 62%; height: 4%; margin-top: -3%; overflow: visible; }
+.chalkboard-stroke path { fill: none; stroke: #e08a45; stroke-width: 2.4; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.chalkboard-teaser em { color: #e9e3d6; font-size: 14.5cqw; }
+.chalkboard-teaser label { color: #e9b53c; font-size: 12.5cqw; }

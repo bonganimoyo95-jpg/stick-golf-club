@@ -92,23 +92,16 @@ function EventChalkboard({
         <span className="object-surface" aria-hidden="true" />
         <span className="object-glow" aria-hidden="true" />
         <PortalOutline points="0,9 88,0 100,88 14,100" />
+        <span className="chalkboard-wipe" aria-hidden="true" />
         <span className="chalkboard-teaser" aria-hidden="true">
-          <small>UP NEXT</small>
+          <small>Up next:</small>
           <span className="series-logo-mask chalkboard-logo" />
-          <b>{nextEvent.volume.toUpperCase()}</b>
+          <b>{nextEvent.volume}</b>
+          <svg className="chalkboard-stroke" viewBox="0 0 100 8" preserveAspectRatio="none"><path d="M3 5C30 2 62 6 97 3" /></svg>
           <em>{nextEvent.dateShort} · {nextEvent.timeShort}</em>
-          <label>DETAILS →</label>
+          <label>tap for details</label>
         </span>
       </button> : <section className="event-board-face" role="dialog" aria-modal="true" aria-labelledby="event-title">
-        <svg className="chalk-defs" aria-hidden="true" focusable="false">
-          <filter id="chalk" x="-5%" y="-5%" width="110%" height="110%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3" result="warp" />
-            <feDisplacementMap in="SourceGraphic" in2="warp" scale="2" result="rough" />
-            <feTurbulence type="fractalNoise" baseFrequency="1.15" numOctaves="2" seed="8" result="grain" />
-            <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.7 1.75" result="dust" />
-            <feComposite in="rough" in2="dust" operator="in" />
-          </filter>
-        </svg>
         <div className="event-board-slate">
           <CloseButton onClick={onClose} buttonRef={closeRef} />
           <div className="chalk">
@@ -268,6 +261,23 @@ useEffect(() => {
 
   return (
     <main className={`clubhouse-app state-${roomState}`}>
+      <svg className="chalk-defs" aria-hidden="true" focusable="false">
+        <filter id="chalk" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3" result="warp" />
+          <feDisplacementMap in="SourceGraphic" in2="warp" scale="2" result="rough" />
+          <feTurbulence type="fractalNoise" baseFrequency="1.15" numOctaves="2" seed="8" result="grain" />
+          <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.7 1.75" result="dust" />
+          <feComposite in="rough" in2="dust" operator="in" />
+        </filter>
+        <filter id="chalk-fine" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.09" numOctaves="2" seed="5" result="warp" />
+          <feDisplacementMap in="SourceGraphic" in2="warp" scale="1.1" result="rough" />
+          <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="2" seed="11" result="grain" />
+          <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.3 1.6" result="dust" />
+          <feComposite in="rough" in2="dust" operator="in" />
+        </filter>
+      </svg>
+
       <h1 className="sr-only">STICK — Welcome to the new clubhouse</h1>
 
       <div className="room-viewport" ref={viewportRef} aria-hidden={(roomState !== "home" && roomState !== "next") || eventInviteOpen}>
