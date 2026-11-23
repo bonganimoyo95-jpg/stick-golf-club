@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { type CSSProperties, useEffect, useRef } from "react";
+import type { CSSProperties } from "react";
 import { CloseButton } from "./room-ui";
-import { comingUp, type Round } from "./site-content";
+import { archiveRoom, comingUp, type Round } from "./site-content";
 
 /** Where each print hangs on the line, as a percentage of the room's width. Oldest on the left. */
 const desktopSlots = [30, 56];
@@ -122,78 +122,44 @@ function DarkroomShelf() {
   );
 }
 
-export function Darkroom({
-  rounds,
-  albumId,
-  photoIndex,
-  onOpenAlbum,
-  onBackToDarkroom,
-  onPhoto,
-  onClose,
-  onJoin,
-}: {
-  rounds: Round[];
-  albumId: string | null;
-  photoIndex: number | null;
-  onOpenAlbum: (id: string) => void;
-  onBackToDarkroom: () => void;
-  onPhoto: (index: number | null) => void;
-  onClose: () => void;
-  onJoin: () => void;
-}) {
-  const album = rounds.find((round) => round.id === albumId && round.photos.length > 0) ?? null;
-  const backRef = useRef<HTMLButtonElement>(null);
-  const lastPrintRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (album) {
-      lastPrintRef.current = album.id;
-      backRef.current?.focus();
-    } else if (lastPrintRef.current) {
-      document.querySelector<HTMLElement>(`[data-print="${lastPrintRef.current}"]`)?.focus();
-    }
-  }, [album]);
-
+/** The archive: a darkroom-style line of prints, one per round, each opening its Pixieset gallery. */
+export function Darkroom({ rounds, onClose, onJoin }: { rounds: Round[]; onClose: () => void; onJoin: () => void }) {
   return (
     <section className="experience-panel darkroom-panel" role="dialog" aria-modal="true" aria-labelledby="darkroom-title">
-      <div className="darkroom-scene" aria-hidden={album ? true : undefined} inert={album ? true : undefined}>
+      <div className="darkroom-scene">
         <span className="darkroom-glow" aria-hidden="true" />
         <span className="darkroom-safelight" aria-hidden="true"><i /><b /></span>
         <CloseButton onClick={onClose} />
 
         <header className="darkroom-header">
-          <p className="panel-kicker">THE ARCHIVE</p>
-          <h2 id="darkroom-title">The darkroom</h2>
-          <p>Every round, hung up to dry. Pick a print to open the roll.</p>
+          <p className="panel-kicker">FAIRWAYS &amp; FRIENDS</p>
+          <h2 id="darkroom-title">{archiveRoom.name}</h2>
+          <p>{archiveRoom.intro}</p>
         </header>
 
         <svg className="darkroom-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          <path className="line-desktop" d="M-2 30Q50 44 102 30" />
+          <path className="line-desktop" d="M-2 27Q50 39 102 27" />
           <path className="line-mobile" d="M-2 33Q50 43 102 33" />
         </svg>
 
         {rounds.map((round, index) => {
-          const slot = desktopSlots[index] ?? 30 + index * 26;
-          const style = { "--x": slot, "--mx": index % 2 === 0 ? 27 : 73, "--tilt": index % 2 === 0 ? "-2.6deg" : "2.2deg", "--sway-delay": `${-index * 1.7}s` } as CSSProperties;
-          const hasRoll = round.photos.length > 0;
-          const paper = (
-            <>
+          const portrait = round.cover.height > round.cover.width;
+          const style = {
+            "--x": desktopSlots[index] ?? 30 + index * 26,
+            "--mx": index % 2 === 0 ? 27 : 73,
+            "--tilt": index % 2 === 0 ? "-2.6deg" : "2.2deg",
+            "--sway-delay": `${-index * 1.7}s`,
+            "--ratio": `${round.cover.width} / ${round.cover.height}`,
+          } as CSSProperties;
+          return (
+            <a key={round.id} className={"darkroom-print" + (portrait ? " is-portrait" : "")} style={style} href={round.galleryUrl} target="_blank" rel="noreferrer" aria-label={`Fairways & Friends ${round.volume}: see the full gallery on Pixieset (opens in a new tab)`}>
               <ClothesPin />
               <span className="print-paper">
-                {round.cover ? (
-                  <span className="print-photo"><Image src={round.cover.src} alt="" fill sizes="(max-width: 760px) 42vw, 25vw" unoptimized /></span>
-                ) : (
-                  <span className="print-photo print-latent" aria-hidden="true"><b>{round.volume}</b><small>still in the tray</small></span>
-                )}
-                <span className="print-caption">Fairways &amp; Friends · {round.volume}</span>
+                <span className="print-photo"><Image src={round.cover.src} alt="" fill sizes="(max-width: 760px) 42vw, 25vw" unoptimized /></span>
+                <span className="print-caption"><span className="print-caption-series">Fairways &amp; Friends · </span>{round.volume}</span>
               </span>
-              <span className="print-cta">{hasRoll ? <>Open the roll <span aria-hidden="true">→</span></> : <>See the gallery <span aria-hidden="true">↗</span></>}</span>
-            </>
-          );
-          return hasRoll ? (
-            <button key={round.id} data-print={round.id} className="darkroom-print" style={style} onClick={() => onOpenAlbum(round.id)} aria-label={`Fairways & Friends ${round.volume}: open the photos`}>{paper}</button>
-          ) : (
-            <a key={round.id} data-print={round.id} className="darkroom-print" style={style} href={round.galleryUrl} target="_blank" rel="noreferrer" aria-label={`Fairways & Friends ${round.volume}: open the full gallery on Pixieset`}>{paper}</a>
+              <span className="print-cta">{round.galleryCount ? `See all ${round.galleryCount} photos` : "See the gallery"} <span aria-hidden="true">↗</span></span>
+            </a>
           );
         })}
 
@@ -209,43 +175,6 @@ export function Darkroom({
 
         <DarkroomShelf />
       </div>
-
-      {album && (
-        <>
-          <div className="darkroom-album-scrim" onClick={onBackToDarkroom} aria-hidden="true" />
-          <section className="experience-panel archive-panel darkroom-album" role="dialog" aria-modal="true" aria-labelledby="album-title">
-            <CloseButton onClick={onBackToDarkroom} buttonRef={backRef} label="Back to the darkroom" text="BACK TO THE DARKROOM" />
-            <div className="archive-header">
-              <div>
-                <p className="panel-kicker">THE ARCHIVE / {album.roll}</p>
-                <h2 id="album-title">FAIRWAYS &amp; FRIENDS<br />{album.volume.toUpperCase()}</h2>
-              </div>
-              <p>{album.caption}<br />Open one, then move through the story.</p>
-            </div>
-            <div className="photo-contact-sheet">
-              {album.photos.map((photo, index) => (
-                <button className="archive-photo" key={photo.src} style={{ "--rotate": photo.rotate } as CSSProperties} onClick={() => onPhoto(index)} aria-label={`Open photo ${index + 1}: ${photo.label}`}>
-                  <span className="photo-image"><Image src={photo.src} alt={photo.alt} fill sizes="(max-width: 760px) 44vw, 22vw" unoptimized /></span>
-                  <small>{String(index + 1).padStart(2, "0")} / {photo.label}</small>
-                </button>
-              ))}
-            </div>
-            <a className="archive-external" href={album.galleryUrl} target="_blank" rel="noreferrer">{album.galleryCount ? `VIEW ALL ${album.galleryCount} PHOTOS` : "VIEW THE FULL GALLERY"} <span>↗</span></a>
-
-            {photoIndex !== null && album.photos[photoIndex] && (
-              <div className="archive-lightbox" role="dialog" aria-modal="true" aria-label={`${album.photos[photoIndex].label}, photo ${photoIndex + 1} of ${album.photos.length}`} onClick={() => onPhoto(null)}>
-                <button className="lightbox-close" onClick={() => onPhoto(null)} aria-label="Close enlarged photo">× <small>CLOSE</small></button>
-                <button className="lightbox-arrow lightbox-previous" onClick={(event) => { event.stopPropagation(); onPhoto((photoIndex - 1 + album.photos.length) % album.photos.length); }} aria-label="Previous photo">←</button>
-                <figure onClick={(event) => event.stopPropagation()}>
-                  <div className="lightbox-image"><Image src={album.photos[photoIndex].src} alt={album.photos[photoIndex].alt} fill sizes="92vw" priority unoptimized /></div>
-                  <figcaption><span>{String(photoIndex + 1).padStart(2, "0")} / {album.photos.length}</span><strong>{album.photos[photoIndex].label}</strong><small>USE ← → KEYS TO MOVE THROUGH THE ROLL</small></figcaption>
-                </figure>
-                <button className="lightbox-arrow lightbox-next" onClick={(event) => { event.stopPropagation(); onPhoto((photoIndex + 1) % album.photos.length); }} aria-label="Next photo">→</button>
-              </div>
-            )}
-          </section>
-        </>
-      )}
     </section>
   );
 }

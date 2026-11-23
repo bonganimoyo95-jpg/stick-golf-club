@@ -140,12 +140,9 @@ export default function Home() {
   const [roomState, setRoomState] = useState<RoomState>("home");
   const [joinState, setJoinState] = useState<JoinState>("idle");
   const [joinMessage, setJoinMessage] = useState("");
-  const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
-  const [albumId, setAlbumId] = useState<string | null>(null);
   // The board advertises nextEvent until it ends, then switches to what's coming up, even without a redeploy.
   const [eventOver, setEventOver] = useState(false);
   const activeEvent = nextEvent && !eventOver ? nextEvent : null;
-  const albumPhotos = rounds.find((round) => round.id === albumId)?.photos ?? [];
   const [eventInviteOpen, setEventInviteOpen] = useState(false);
   // Once opened, the Spotify player stays mounted so music keeps playing while the visitor explores.
   const [soundsLoaded, setSoundsLoaded] = useState(false);
@@ -161,10 +158,9 @@ useEffect(() => {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       if (nextEvent && eventIsOver(nextEvent)) setEventOver(true);
-      const [hash, sub] = window.location.hash.replace("#", "").split("/") as [RoomState, string | undefined];
+      const hash = window.location.hash.replace("#", "").split("/")[0] as RoomState;
       if (["next", "archive", "sounds", "about"].includes(hash)) setRoomState(hash);
       if (hash === "sounds") setSoundsLoaded(true);
-      if (hash === "archive" && sub && rounds.some((round) => round.id === sub && round.photos.length > 0)) setAlbumId(sub);
       const viewport = viewportRef.current;
       if (viewport && window.innerWidth < 760) viewport.scrollLeft = viewport.scrollWidth * 0.055;
     }, 40);
@@ -201,13 +197,7 @@ useEffect(() => {
         else if (first && last && !event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
         return;
       }
-      if (selectedPhoto !== null && albumPhotos.length) {
-        if (event.key === "Escape") setSelectedPhoto(null);
-        if (event.key === "ArrowLeft") setSelectedPhoto((selectedPhoto - 1 + albumPhotos.length) % albumPhotos.length);
-        if (event.key === "ArrowRight") setSelectedPhoto((selectedPhoto + 1) % albumPhotos.length);
-      } else if (albumId !== null && event.key === "Escape") {
-        closeAlbum();
-      } else if (event.key === "Escape" && eventInviteOpen) {
+      if (event.key === "Escape" && eventInviteOpen) {
         setEventInviteOpen(false);
       } else if (event.key === "Escape") {
         setRoomState("home");
@@ -219,8 +209,6 @@ useEffect(() => {
   });
 
   function setState(next: RoomState) {
-    setSelectedPhoto(null);
-    setAlbumId(null);
     if (next === "sounds") setSoundsLoaded(true);
     setRoomState(next);
     const hash = next === "home" ? window.location.pathname : `#${next}`;
@@ -228,18 +216,6 @@ useEffect(() => {
   }
 
   function closeRoom() { setState("home"); }
-
-  function openAlbum(id: string) {
-    setSelectedPhoto(null);
-    setAlbumId(id);
-    window.history.replaceState(null, "", `#archive/${id}`);
-  }
-
-  function closeAlbum() {
-    setSelectedPhoto(null);
-    setAlbumId(null);
-    window.history.replaceState(null, "", "#archive");
-  }
 
   function goToSignup() {
     setState("home");
@@ -309,7 +285,7 @@ useEffect(() => {
               <div className="room-atmosphere" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
               <div className="architectural-welcome" aria-hidden="true">WELCOME TO THE NEW CLUBHOUSE</div>
               <RoomPortal kind="about" points="0,0 100,0 100,100 0,100" title="WHAT IS STICK?" description="Our story and what's next" onOpen={() => setState("about")} />
-              <RoomPortal kind="archive" points="92.4,0 100,0 100,98.9 97.6,100 91.8,99.7 84.1,97.2 47.6,97.2 47.1,88.8 31.2,88 28.2,86.3 7.6,86.3 5.9,82.1 5.9,28.6 3.5,27.5 .6,21.8 2.4,16.2 1.2,10.9" title="THE ARCHIVE" description={`The darkroom · Vol. ${rounds.map((round) => round.volume.replace("Vol. ", "")).join(" & ")}`} onOpen={() => setState("archive")} />
+              <RoomPortal kind="archive" points="92.4,0 100,0 100,98.9 97.6,100 91.8,99.7 84.1,97.2 47.6,97.2 47.1,88.8 31.2,88 28.2,86.3 7.6,86.3 5.9,82.1 5.9,28.6 3.5,27.5 .6,21.8 2.4,16.2 1.2,10.9" title="THE ARCHIVE" description={`Every round in photos · Vol. ${rounds.map((round) => round.volume.replace("Vol. ", "")).join(" & ")}`} onOpen={() => setState("archive")} />
               <RoomPortal kind="sounds" points="1.3,22.1 22.0,13.4 49.6,5.5 85.0,7.7 90.9,2.1 97.2,5.5 98.4,35.2 82.1,39.6 81.1,98.0 61.4,92.7 11.2,70.1 1.7,61.4" title="CLUBHOUSE SOUNDS" description="The listening room · F&F playlist" onOpen={() => setState("sounds")} />
               <RoomPortal kind="play" points="1,1 100,0 99,99 0,100" title="PLAY POCKET GOLF" description="Hole 13 · Azalea Bend" onOpen={() => setState("play")} play />
               <span className="simulator-depth-mask" aria-hidden="true" />
@@ -340,7 +316,7 @@ useEffect(() => {
       {roomState !== "home" && roomState !== "next" && roomState !== "sounds" && <div className="experience-layer" role="presentation">
         <div className="experience-scrim" onClick={closeRoom} />
 
-        {roomState === "archive" && <Darkroom rounds={rounds} albumId={albumId} photoIndex={selectedPhoto} onOpenAlbum={openAlbum} onBackToDarkroom={closeAlbum} onPhoto={setSelectedPhoto} onClose={closeRoom} onJoin={goToSignup} />}
+        {roomState === "archive" && <Darkroom rounds={rounds} onClose={closeRoom} onJoin={goToSignup} />}
 
         {roomState === "about" && <section className="experience-panel about-panel" role="dialog" aria-modal="true" aria-labelledby="about-title">
           <CloseButton onClick={closeRoom} />
