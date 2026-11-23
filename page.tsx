@@ -316,7 +316,7 @@ useEffect(() => {
       {roomState !== "home" && roomState !== "next" && roomState !== "sounds" && <div className="experience-layer" role="presentation">
         <div className="experience-scrim" onClick={closeRoom} />
 
-        {roomState === "archive" && <Darkroom rounds={rounds} onClose={closeRoom} onJoin={goToSignup} />}
+        {roomState === "archive" && <Darkroom rounds={rounds} onClose={closeRoom} />}
 
         {roomState === "about" && <section className="experience-panel about-panel" role="dialog" aria-modal="true" aria-labelledby="about-title">
           <CloseButton onClick={closeRoom} />

@@ -109,10 +109,10 @@ export const rounds: Round[] = [
  * To swap in new artwork, change the image and its size, then re-measure the screen.
  */
 export const listeningRoom = {
-  image: "/assets/fairways-listening-room.webp",
-  width: 1774,
-  height: 887,
-  screen: { left: 33.5, top: 10, width: 35.8, height: 45.8 },
+  image: "/assets/listening-room-golf.webp",
+  width: 1672,
+  height: 941,
+  screen: { left: 32, top: 15.3, width: 35.6, height: 34.8 },
 };
 
 /** DRAFT COPY — written from the founder's notes. Edit freely. */

@@ -3,11 +3,10 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { CloseButton } from "./room-ui";
-import { archiveRoom, comingUp, type Round } from "./site-content";
+import { archiveRoom, type Round } from "./site-content";
 
 /** Where each print hangs on the line, as a percentage of the room's width. Oldest on the left. */
-const desktopSlots = [30, 56];
-const vol3Slot = 81;
+const desktopSlots = [37, 63];
 
 function ClothesPin() {
   return (
@@ -123,7 +122,7 @@ function DarkroomShelf() {
 }
 
 /** The archive: a darkroom-style line of prints, one per round, each opening its Pixieset gallery. */
-export function Darkroom({ rounds, onClose, onJoin }: { rounds: Round[]; onClose: () => void; onJoin: () => void }) {
+export function Darkroom({ rounds, onClose }: { rounds: Round[]; onClose: () => void }) {
   return (
     <section className="experience-panel darkroom-panel" role="dialog" aria-modal="true" aria-labelledby="darkroom-title">
       <div className="darkroom-scene">
@@ -162,16 +161,6 @@ export function Darkroom({ rounds, onClose, onJoin }: { rounds: Round[]; onClose
             </a>
           );
         })}
-
-        <div className="darkroom-next" style={{ "--x": vol3Slot } as CSSProperties}>
-          <span className="darkroom-next-pin"><ClothesPin /></span>
-          <span className="darkroom-next-string" aria-hidden="true" />
-          <button className="darkroom-next-tag" onClick={onJoin}>
-            <b>{comingUp.volume}</b>
-            <span>{comingUp.when}</span>
-            <small>Get the first invite <span aria-hidden="true">→</span></small>
-          </button>
-        </div>
 
         <DarkroomShelf />
       </div>
